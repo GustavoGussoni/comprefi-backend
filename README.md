@@ -5,6 +5,7 @@ API para gerenciamento de produtos Apple da CompreFi, adaptada para funcionar co
 ## 🚀 Principais Melhorias
 
 ### Estrutura de Dados Adaptada
+
 - **Schema Prisma atualizado** para suportar todos os campos do frontend
 - **Campos de preços calculados**: `originalPrice`, `installmentPrice`, `pixPrice`
 - **Arrays de imagens reais**: `realImages[]` para produtos seminovos
@@ -12,6 +13,7 @@ API para gerenciamento de produtos Apple da CompreFi, adaptada para funcionar co
 - **Categorização aprimorada**: suporte completo às categorias do frontend
 
 ### Funcionalidades Novas
+
 - **Cálculo automático de preços** baseado no custo e fórmulas específicas
 - **Integração com Google Sheets** (preparada para sincronização)
 - **Agrupamento de produtos** por categoria ou outros campos
@@ -19,6 +21,7 @@ API para gerenciamento de produtos Apple da CompreFi, adaptada para funcionar co
 - **Documentação Swagger** completa
 
 ### Fórmulas de Cálculo
+
 ```
 pixPrice = (custo + frete) / 0.9
 installmentPrice = (pixPrice / 0.8651) / 12
@@ -34,23 +37,27 @@ originalPrice = pixPrice * 1.2 (20% a mais para alavancagem)
 ## 🛠️ Instalação
 
 1. **Clone o repositório**
+
 ```bash
 git clone <url-do-repositorio>
 cd comprefi-api
 ```
 
 2. **Instale as dependências**
+
 ```bash
 npm install
 ```
 
 3. **Configure as variáveis de ambiente**
+
 ```bash
 cp .env.example .env
 # Edite o arquivo .env com suas configurações
 ```
 
 4. **Configure o banco de dados**
+
 ```bash
 # Gerar o cliente Prisma
 npm run prisma:generate
@@ -65,11 +72,13 @@ npm run prisma:seed
 ## 🚀 Executando a aplicação
 
 ### Desenvolvimento
+
 ```bash
 npm run start:dev
 ```
 
 ### Produção
+
 ```bash
 npm run build
 npm run start:prod
@@ -84,6 +93,7 @@ Acesse a documentação Swagger em: `http://localhost:3000/api/docs`
 ## 🔗 Endpoints Principais
 
 ### Produtos
+
 - `GET /products` - Listar produtos (com filtros)
 - `GET /products/:id` - Buscar produto por ID
 - `GET /products/by-category/:slug` - Produtos por categoria
@@ -94,18 +104,21 @@ Acesse a documentação Swagger em: `http://localhost:3000/api/docs`
 - `POST /products/bulk-create` - Criar múltiplos produtos
 
 ### Filtros Disponíveis
+
 - `?category=iPhones Seminovos` - Filtrar por categoria
 - `?isNew=true` - Filtrar produtos novos/seminovos
 - `?isActive=true` - Filtrar produtos ativos
 - `?groupBy=category` - Agrupar resultados
 
 ### Autenticação
+
 - `POST /auth/login` - Login
 - `POST /auth/register` - Registro
 
 ## 🗄️ Estrutura do Banco
 
 ### Tabela Products
+
 ```sql
 - id (UUID, PK)
 - model (String) - Ex: "iPhone 15 Pro Max"
@@ -147,6 +160,7 @@ A API suporta configurações flexíveis de cálculo de preços através da tabe
 Para habilitar a sincronização automática com Google Sheets:
 
 1. **Configure as credenciais no .env**
+
 ```env
 GOOGLE_CLIENT_EMAIL="sua-conta-servico@projeto.iam.gserviceaccount.com"
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
@@ -156,6 +170,7 @@ GOOGLE_SHEET_ID="1BPVsBLD2eTbJzW286bSyZSnA_xI3TY2XPkp42FngIrg"
 2. **Compartilhe a planilha** com o email da conta de serviço
 
 3. **Use o endpoint de sincronização**
+
 ```bash
 POST /products/sync-from-sheet
 ```
@@ -176,11 +191,13 @@ npm run test:cov
 ## 📦 Deploy
 
 ### Vercel (Recomendado)
+
 1. Configure as variáveis de ambiente na Vercel
 2. Conecte seu repositório
 3. Deploy automático
 
 ### Docker
+
 ```bash
 # Build da imagem
 docker build -t comprefi-api .
@@ -204,4 +221,3 @@ Este projeto é propriedade da CompreFi e não possui licença pública.
 ## 🆘 Suporte
 
 Para dúvidas ou problemas, entre em contato com a equipe de desenvolvimento da CompreFi.
-
