@@ -46,12 +46,14 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "color", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: "Percentual da bateria (para produtos seminovos)",
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Percentual da bateria (obrigatório apenas para produtos seminovos)",
         example: "89%",
     }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.ValidateIf)((o) => o.isNew === false),
+    (0, class_validator_1.IsNotEmpty)({ message: "Bateria é obrigatória para produtos seminovos" }),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.MaxLength)(10),
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "battery", void 0);

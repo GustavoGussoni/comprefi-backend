@@ -2,7 +2,7 @@ export declare class CreateProductDto {
     model: string;
     storage?: string;
     color: string;
-    battery: string;
+    battery?: string;
     originalPrice: string;
     installmentPrice: string;
     pixPrice: string;

@@ -112,7 +112,7 @@ export class TradeCalculatorService {
 
         // Dados do produto desejado
         produtoDesejado: produtoDesejado,
-        precoProduto: precoProduto,
+        precoProduto: Number(precoProduto),
 
         // Cálculo final
         valorFinal: Number(valorFinal.toFixed(2)),
@@ -134,7 +134,7 @@ export class TradeCalculatorService {
       depreciacaoBateria,
       depreciacaoDefeitos,
 
-      precoProduto: precoProduto,
+      precoProduto: Number(precoProduto),
       temDefeito: (data.defeitos?.length || 0) > 0,
       precisaCotacao: false,
 

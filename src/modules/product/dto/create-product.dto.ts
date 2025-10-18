@@ -8,6 +8,7 @@ import {
   IsNumber,
   MaxLength,
   IsUrl,
+  ValidateIf,
 } from "class-validator";
 
 export class CreateProductDto {
@@ -38,14 +39,17 @@ export class CreateProductDto {
   @MaxLength(255)
   color: string;
 
-  @ApiProperty({
-    description: "Percentual da bateria (para produtos seminovos)",
+  @ApiPropertyOptional({
+    description:
+      "Percentual da bateria (obrigatório apenas para produtos seminovos)",
     example: "89%",
   })
+  @IsOptional()
+  @ValidateIf((o) => o.isNew === false)
+  @IsNotEmpty({ message: "Bateria é obrigatória para produtos seminovos" })
   @IsString()
-  @IsNotEmpty()
   @MaxLength(10)
-  battery: string;
+  battery?: string;
 
   @ApiProperty({
     description: "Preço original (para alavancagem)",

@@ -26,9 +26,9 @@ model User {
 model Product {
   id               String   @id @default(uuid())
   model            String   // Ex: "iPhone 15 Pro Max", "MacBook Pro 16" M4 Max"
-  storage          String   // Ex: "256GB", "(1TB)", "(48GB RAM / 1TB SSD)"
+  storage          String?   // Ex: "256GB", "(1TB)", "(48GB RAM / 1TB SSD)"
   color            String   // Ex: "Titânio Natural", "Prata, Preto-espacial"
-  battery          String   // Ex: "89%", "100%"
+  battery          String?   // Ex: "89%", "100%"
   originalPrice    String   // Ex: "R$ 6.590,00" (preço de referência para alavancagem)
   installmentPrice String   // Ex: "R$ 540,67", "12x R$ 3.151,00" (preço parcelado)
   pixPrice         String   // Ex: "R$ 5.690" (preço à vista no PIX)
