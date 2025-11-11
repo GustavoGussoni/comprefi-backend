@@ -6,18 +6,16 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Configuração de CORS para permitir acesso do frontend
+  const corsOrigins =
+    process.env.NODE_ENV === "production"
+      ? [process.env.FRONTEND_URL || "https://seu-frontend.com"]
+      : ["http://localhost:5173", "http://localhost:5174"];
+
   app.enableCors({
-    origin: true, // Permite qualquer origem em desenvolvimento
+    origin: corsOrigins,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });
-
-  app.enableCors({
-    origin: "http://localhost:5173", // porta do seu frontend
-    credentials: true,
-  });
-
   // Configuração de validação global
   app.useGlobalPipes(
     new ValidationPipe({

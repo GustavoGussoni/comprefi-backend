@@ -2,6 +2,7 @@ import { PrismaService } from "../../../database/prisma.service";
 import { CalculateTradeDto, TradeResultDto } from "../dto/calculate-trade.dto";
 export declare class TradeCalculatorService {
     private prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     calculateTrade(data: CalculateTradeDto): Promise<TradeResultDto>;
     private getValorBase;

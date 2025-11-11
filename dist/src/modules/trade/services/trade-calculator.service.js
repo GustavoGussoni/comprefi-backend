@@ -8,13 +8,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var TradeCalculatorService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TradeCalculatorService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../../database/prisma.service");
-let TradeCalculatorService = class TradeCalculatorService {
+let TradeCalculatorService = TradeCalculatorService_1 = class TradeCalculatorService {
     constructor(prisma) {
         this.prisma = prisma;
+        this.logger = new common_1.Logger(TradeCalculatorService_1.name);
     }
     async calculateTrade(data) {
         let valorBase;
@@ -22,13 +24,13 @@ let TradeCalculatorService = class TradeCalculatorService {
         if (data.valorManual !== undefined && data.valorManual !== null) {
             valorBase = data.valorManual;
             valorManualUsado = true;
-            console.log(`💰 Usando valor manual: R$ ${valorBase.toFixed(2)} para ${data.modeloAtual} ${data.capacidadeAtual}`);
+            this.logger.log(`💰 Usando valor manual: R$ ${valorBase.toFixed(2)}...`);
         }
         else {
             const valorTabela = await this.getValorBase(data.modeloAtual, data.capacidadeAtual);
             if (valorTabela) {
                 valorBase = valorTabela.valorBase;
-                console.log(`📊 Usando valor da tabela: R$ ${valorBase.toFixed(2)} para ${data.modeloAtual} ${data.capacidadeAtual}`);
+                this.logger.log(`📊 Usando valor da tabela: R$ ${valorBase.toFixed(2)}...`);
             }
             else {
                 throw new Error(`Valor não encontrado para ${data.modeloAtual} ${data.capacidadeAtual}. Forneça um valor manual.`);
@@ -55,15 +57,15 @@ let TradeCalculatorService = class TradeCalculatorService {
         const precoProduto = this.parsePrice(produtoDesejado.pixPrice);
         await this.saveQuestionario(data, valorAparelho, valorFinal, false, false, valorManualUsado);
         const resumoDetalhado = `🧮 Cálculo de troca:
-  📱 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
-  💰 Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
-  🔋 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
-  🔧 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
-  📊 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
-  🎯 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
-  💳 Valor a pagar: R$ ${valorFinal.toFixed(2)}
-  🎁 Com desconto: R$ ${valorComDesconto.toFixed(2)}`;
-        console.log(resumoDetalhado);
+📱 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
+💰 Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
+🔋 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
+🔧 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
+📊 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
+🎯 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
+💳 Valor a pagar: R$ ${valorFinal.toFixed(2)}
+🎁 Com desconto: R$ ${valorComDesconto.toFixed(2)}`;
+        this.logger.log(resumoDetalhado);
         if (precisaCotacao) {
             return {
                 valorBase: valorBase,
@@ -286,7 +288,7 @@ let TradeCalculatorService = class TradeCalculatorService {
     }
 };
 exports.TradeCalculatorService = TradeCalculatorService;
-exports.TradeCalculatorService = TradeCalculatorService = __decorate([
+exports.TradeCalculatorService = TradeCalculatorService = TradeCalculatorService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], TradeCalculatorService);

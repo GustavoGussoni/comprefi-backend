@@ -1,9 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../../database/prisma.service";
 import { CalculateTradeDto, TradeResultDto } from "../dto/calculate-trade.dto";
 
 @Injectable()
 export class TradeCalculatorService {
+  private readonly logger = new Logger(TradeCalculatorService.name);
   constructor(private prisma: PrismaService) {}
 
   async calculateTrade(data: CalculateTradeDto): Promise<TradeResultDto> {
@@ -15,9 +16,7 @@ export class TradeCalculatorService {
       // Prioridade: valor manual sempre sobrescreve
       valorBase = data.valorManual;
       valorManualUsado = true;
-      console.log(
-        `💰 Usando valor manual: R$ ${valorBase.toFixed(2)} para ${data.modeloAtual} ${data.capacidadeAtual}`
-      );
+      this.logger.log(`💰 Usando valor manual: R$ ${valorBase.toFixed(2)}...`);
     } else {
       // Buscar na tabela
       const valorTabela = await this.getValorBase(
@@ -27,8 +26,8 @@ export class TradeCalculatorService {
 
       if (valorTabela) {
         valorBase = valorTabela.valorBase;
-        console.log(
-          `📊 Usando valor da tabela: R$ ${valorBase.toFixed(2)} para ${data.modeloAtual} ${data.capacidadeAtual}`
+        this.logger.log(
+          `📊 Usando valor da tabela: R$ ${valorBase.toFixed(2)}...`
         );
       } else {
         throw new Error(
@@ -92,15 +91,15 @@ export class TradeCalculatorService {
 
     // 10. Log detalhado do cálculo
     const resumoDetalhado = `🧮 Cálculo de troca:
-  📱 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
-  💰 Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
-  🔋 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
-  🔧 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
-  📊 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
-  🎯 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
-  💳 Valor a pagar: R$ ${valorFinal.toFixed(2)}
-  🎁 Com desconto: R$ ${valorComDesconto.toFixed(2)}`;
-    console.log(resumoDetalhado);
+📱 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
+💰 Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
+🔋 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
+🔧 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
+📊 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
+🎯 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
+💳 Valor a pagar: R$ ${valorFinal.toFixed(2)}
+🎁 Com desconto: R$ ${valorComDesconto.toFixed(2)}`;
+    this.logger.log(resumoDetalhado);
 
     if (precisaCotacao) {
       return {
