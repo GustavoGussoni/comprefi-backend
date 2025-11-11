@@ -25,6 +25,7 @@
     "prisma:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@nestjs/cli": "^11.0.7",
     "@eslint/config-array": "^0.21.0",
     "@nestjs/common": "^11.1.3",
     "@nestjs/config": "^4.0.2",
@@ -45,7 +46,6 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.7",
     "@nestjs/schematics": "^11.0.5",
     "@nestjs/testing": "^11.1.3",
     "@types/express": "^5.0.3",
