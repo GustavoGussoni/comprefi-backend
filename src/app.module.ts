@@ -7,6 +7,8 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
 import { PrismaService } from "./database/prisma.service";
 import { TradeModule } from "./modules/trade/trade.module";
+import { CatalogModule } from "./modules/catalog/catalog.module";
+
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { TradeModule } from "./modules/trade/trade.module";
     AuthModule,
     UsersModule,
     TradeModule,
+    CatalogModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

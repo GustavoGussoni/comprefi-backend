@@ -1,0 +1,1920 @@
+[
+  {
+    "slug": "iphone-17-pro-max",
+    "model": "iPhone 17 Pro Max",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "O iPhone 17 Pro Max (lançado em setembro de 2025) destaca-se pela tela de 6,9 polegadas, chip A19 Pro (3nm), 12 GB de RAM e sistema de câmeras triplo de 48 MP. Conta com corpo em alumínio, Face ID, iOS 26, bateria de 5.088 mAh com carregamento rápido de 40W e conectividade Wi-Fi 7, sendo focado em desempenho e fotografia de alta resolução.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB",
+      "1TB",
+      "2TB"
+    ],
+    "colors": [
+      {
+        "name": "Prata",
+        "hex": "#C0C0C0"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5B7BA5"
+      },
+      {
+        "name": "Laranja",
+        "hex": "#E8702A"
+      }
+    ],
+    "pricing": {
+      "256GB-Prata": {
+        "originalPrice": "R$ 9.469,00",
+        "installmentPrice": "R$ 830,84",
+        "pixPrice": "R$ 8.743"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 9.529,00",
+        "installmentPrice": "R$ 836,11",
+        "pixPrice": "R$ 8.798"
+      },
+      "256GB-Laranja": {
+        "originalPrice": "R$ 9.299,00",
+        "installmentPrice": "R$ 810,19",
+        "pixPrice": "R$ 8.532"
+      },
+      "512GB-Prata": {
+        "originalPrice": "R$ 11.582,00",
+        "installmentPrice": "R$ 1.016,75",
+        "pixPrice": "R$ 10.698"
+      },
+      "512GB-Azul": {
+        "originalPrice": "R$ 11.229,00",
+        "installmentPrice": "R$ 985,77",
+        "pixPrice": "R$ 10.374"
+      },
+      "512GB-Laranja": {
+        "originalPrice": "R$ 11.111,00",
+        "installmentPrice": "R$ 975,44",
+        "pixPrice": "R$ 10.265,00"
+      },
+      "1TB-Prata": {
+        "originalPrice": "R$ 12.747,00",
+        "installmentPrice": "R$ 1.119,11",
+        "pixPrice": "R$ 11.778"
+      },
+      "1TB-Azul": {
+        "originalPrice": "R$ 12.583,00",
+        "installmentPrice": "R$ 1.104,65",
+        "pixPrice": "R$ 11.625"
+      },
+      "1TB-Laranja": {
+        "originalPrice": "R$ 12.583,00",
+        "installmentPrice": "R$ 1.104,65",
+        "pixPrice": "R$ 11.625"
+      },
+      "2TB-Prata": {
+        "originalPrice": "R$ 15.230,00",
+        "installmentPrice": "R$ 1.337,04",
+        "pixPrice": "R$ 14.071"
+      },
+      "2TB-Azul": {
+        "originalPrice": "R$ 15.112,00",
+        "installmentPrice": "R$ 1.326,71",
+        "pixPrice": "R$ 13.962"
+      },
+      "2TB-Laranja": {
+        "originalPrice": "R$ 15.112,00",
+        "installmentPrice": "R$ 1.326,71",
+        "pixPrice": "R$ 13.962"
+      }
+    }
+  },
+  {
+    "slug": "iphone-17-pro",
+    "model": "iPhone 17 Pro",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "O iPhone 17 Pro (lançado em setembro de 2025) destaca-se pela tela de 6,3 polegadas, chip A19 Pro (3nm), 12 GB de RAM e sistema de câmeras triplo de 48 MP. Conta com corpo em alumínio, Face ID, iOS 26, bateria de 4.252 mAh com carregamento rápido de 40W e conectividade Wi-Fi 7, sendo focado em desempenho e fotografia de alta resolução.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Prata",
+        "hex": "#C0C0C0"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5B7BA5"
+      },
+      {
+        "name": "Laranja",
+        "hex": "#E8702A"
+      }
+    ],
+    "pricing": {
+      "256GB-Prata": {
+        "originalPrice": "R$ 8.618,00",
+        "installmentPrice": "R$ 756,58",
+        "pixPrice": "R$ 7.962"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 8.583,00",
+        "installmentPrice": "R$ 753,48",
+        "pixPrice": "R$ 7.930"
+      },
+      "256GB-Laranja": {
+        "originalPrice": "R$ 8.583,00",
+        "installmentPrice": "R$ 753,48",
+        "pixPrice": "R$ 7.930"
+      },
+      "512GB-Prata": {
+        "originalPrice": "R$ 10.649,00",
+        "installmentPrice": "R$ 934,13",
+        "pixPrice": "R$ 9.831"
+      },
+      "512GB-Azul": {
+        "originalPrice": "R$ 10.649,00",
+        "installmentPrice": "R$ 934,13",
+        "pixPrice": "R$ 9.831"
+      },
+      "512GB-Laranja": {
+        "originalPrice": "R$ 10.649,00",
+        "installmentPrice": "R$ 934,13",
+        "pixPrice": "R$ 9.831"
+      },
+      "1TB-Prata": {
+        "originalPrice": "R$ 12.899,00",
+        "installmentPrice": "R$ 1.125,31",
+        "pixPrice": "R$ 11.843"
+      },
+      "1TB-Azul": {
+        "originalPrice": "R$ 12.899,00",
+        "installmentPrice": "R$ 1.125,31",
+        "pixPrice": "R$ 11.843"
+      },
+      "1TB-Laranja": {
+        "originalPrice": "R$ 12.899,00",
+        "installmentPrice": "R$ 1.125,31",
+        "pixPrice": "R$ 11.843"
+      }
+    }
+  },
+  {
+    "slug": "iphone-air",
+    "model": "iPhone Air",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "iPhone Air (lançado em setembro de 2025) destaca-se pelo design ultrafino e leve com estrutura em titânio e parte frontal em Ceramic Shield 2, oferecendo durabilidade superior. Possui tela Super Retina XDR OLED de 6,5 polegadas com Dynamic Island e ProMotion até 120 Hz, além de sistema de câmera principal Fusion de 48 MP e câmera frontal 18 MP com Center Stage. Alimentado pelo chip A19 Pro com desempenho avançado e autonomia para o dia todo.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Branco",
+        "hex": "#F5F5F0"
+      },
+      {
+        "name": "Dourado",
+        "hex": "#D4AF37"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5B7BA5"
+      }
+    ],
+    "pricing": {
+      "256GB-Preto": {
+        "originalPrice": "R$ 6.640,00",
+        "installmentPrice": "R$ 582,96",
+        "pixPrice": "R$ 6.135"
+      },
+      "256GB-Branco": {
+        "originalPrice": "R$ 6.523,00",
+        "installmentPrice": "R$ 572,64",
+        "pixPrice": "R$ 6.026"
+      },
+      "256GB-Dourado": {
+        "originalPrice": "R$ 6.523,00",
+        "installmentPrice": "R$ 572,64",
+        "pixPrice": "R$ 6.026"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 6.523,00",
+        "installmentPrice": "R$ 572,64",
+        "pixPrice": "R$ 6.026"
+      },
+      "512GB-Branco": {
+        "originalPrice": "R$ 8.289,00",
+        "installmentPrice": "R$ 728,00",
+        "pixPrice": "R$ 7.658"
+      },
+      "512GB-Dourado": {
+        "originalPrice": "R$ 8.289,00",
+        "installmentPrice": "R$ 728,00",
+        "pixPrice": "R$ 7.658"
+      }
+    }
+  },
+  {
+    "slug": "iphone-17",
+    "model": "iPhone 17",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "iPhone 17 (lançado em setembro de 2025) destaca-se pela tela Super Retina XDR OLED de 6,3 polegadas com Dynamic Island e tecnologia ProMotion até 120 Hz. É equipado com chip A19 de última geração e sistema de câmeras duplo Fusion de 48 MP com câmera frontal 18 MP com Center Stage.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Branco",
+        "hex": "#F5F5F0"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5B7BA5"
+      },
+      {
+        "name": "Salvia",
+        "hex": "#9CAF88"
+      },
+      {
+        "name": "Lavanda",
+        "hex": "#B4A7D6"
+      }
+    ],
+    "pricing": {
+      "256GB-Lavanda": {
+        "originalPrice": "R$ 5.759,00",
+        "installmentPrice": "R$ 505,60",
+        "pixPrice": "R$ 5.321"
+      },
+      "256GB-Branco": {
+        "originalPrice": "R$ 5.759,00",
+        "installmentPrice": "R$ 505,60",
+        "pixPrice": "R$ 5.321"
+      },
+      "256GB-Preto": {
+        "originalPrice": "R$ 5.759,00",
+        "installmentPrice": "R$ 505,60",
+        "pixPrice": "R$ 5.321"
+      },
+      "256GB-Salvia": {
+        "originalPrice": "R$ 5.759,00",
+        "installmentPrice": "R$ 505,60",
+        "pixPrice": "R$ 5.321"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 5.759,00",
+        "installmentPrice": "R$ 505,60",
+        "pixPrice": "R$ 5.321"
+      }
+    }
+  },
+  {
+    "slug": "iphone-17e",
+    "model": "iPhone 17e",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "iPhone 17e conta com tela Super Retina XDR OLED de 6,1 polegadas com True Tone e Wide Color (P3). Equipado com chip A19 de 6 núcleos e câmera Fusion de 48 MP (f/1.6) com estabilização óptica, além de câmera frontal TrueDepth de 12 MP. Design em alumínio com Ceramic Shield 2, Face ID, MagSafe 15W e conector USB-C.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#F5F5F0"
+      },
+      {
+        "name": "Preto",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Rose",
+        "hex": "#E8B4B8"
+      }
+    ],
+    "pricing": {
+      "256GB-Branco": {
+        "originalPrice": "R$ 4.599,00",
+        "installmentPrice": "R$ 381,66",
+        "pixPrice": "R$ 4.021"
+      },
+      "256GB-Preto": {
+        "originalPrice": "R$ 4.599,00",
+        "installmentPrice": "R$ 381,66",
+        "pixPrice": "R$ 4.021"
+      },
+      "256GB-Rose": {
+        "originalPrice": "R$ 4.599,00",
+        "installmentPrice": "R$ 381,66",
+        "pixPrice": "R$ 4.021"
+      }
+    }
+  },
+  {
+    "slug": "iphone-16",
+    "model": "iPhone 16",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "iPhone 16 (lançado em setembro de 2024) destaca-se pela tela Super Retina XDR OLED de 6,1 polegadas com Dynamic Island, HDR e True Tone. É equipado com o chip A18 de nova geração, 8 GB de RAM e sistema de câmera duplo de 48 MP com recursos avançados de fotografia.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Branco",
+        "hex": "#F5F5F0"
+      },
+      {
+        "name": "Rosa",
+        "hex": "#F4C2C2"
+      },
+      {
+        "name": "Ultramarino",
+        "hex": "#3F51B5"
+      },
+      {
+        "name": "Verde",
+        "hex": "#4CAF50"
+      }
+    ],
+    "pricing": {
+      "128GB": {
+        "originalPrice": "R$ 5.179,00",
+        "installmentPrice": "R$ 453,96",
+        "pixPrice": "R$ 4.775"
+      }
+    }
+  },
+  {
+    "slug": "iphone-15",
+    "model": "iPhone 15",
+    "category": "iphones-novos",
+    "section": null,
+    "specs": "iPhone 15 (lançado em setembro de 2023) destaca-se pela tela Super Retina XDR OLED de 6,1 polegadas com Dynamic Island. É equipado com o chip A16 Bionic e sistema de câmeras duplo com sensor principal de 48 MP e ultra-angular de 12 MP.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5B7BA5"
+      },
+      {
+        "name": "Rosa",
+        "hex": "#F4C2C2"
+      }
+    ],
+    "pricing": {
+      "128GB": {
+        "originalPrice": "R$ 4.559,00",
+        "installmentPrice": "R$ 395,00",
+        "pixPrice": "R$ 4.153,00"
+      }
+    }
+  },
+  {
+    "slug": "mac-studio-m4-max-36gb",
+    "model": "Mac Studio M4 Max 36GB",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Chip M4 Max (14/16-core CPU, 32/40-core GPU), 36 GB de memória unificada, Thunderbolt 5, HDMI, SDXC, Wi-Fi 6E. Desempenho profissional em formato compacto.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Silver",
+        "hex": "#C0C0C0"
+      }
+    ],
+    "pricing": {
+      "512GB-Silver": {
+        "originalPrice": "R$ 20.786,00",
+        "installmentPrice": "R$ 1.799,62",
+        "pixPrice": "R$ 18.939,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-pro-16-m4-pro-24gb",
+    "model": "MacBook Pro 16",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Tela Liquid Retina XDR 16.2\", Chip M4 Pro (14-core CPU, 20-core GPU), 24 GB de memória unificada, 3x Thunderbolt 5, HDMI, SDXC, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1C1C1E"
+      },
+      {
+        "name": "Silver",
+        "hex": "#C0C0C0"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Black": {
+        "originalPrice": "R$ 20.299,00",
+        "installmentPrice": "R$ 1.757,00",
+        "pixPrice": "R$ 18.495,00"
+      },
+      "512GB-Silver": {
+        "originalPrice": "R$ 20.299,00",
+        "installmentPrice": "R$ 1.757,00",
+        "pixPrice": "R$ 18.495,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-pro-14-m4-24gb",
+    "model": "MacBook Pro 14",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Tela Liquid Retina XDR 14.2\", Chip M4 (10-core CPU, 10-core GPU), 24 GB de memória unificada, 3x Thunderbolt 4, HDMI, SDXC, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "1TB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1C1C1E"
+      }
+    ],
+    "pricing": {
+      "1TB-Space Black": {
+        "originalPrice": "R$ 18.775,00",
+        "installmentPrice": "R$ 1.625,42",
+        "pixPrice": "R$ 17.106,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-pro-14-m5-24gb",
+    "model": "MacBook Pro 14",
+    "category": "macbooks",
+    "section": "Linha M5",
+    "specs": "Tela Liquid Retina XDR 14.2\", Chip M5 (próxima geração), 24 GB de memória unificada, Thunderbolt 5, HDMI, SDXC, MagSafe 3, Wi-Fi 7.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1C1C1E"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Black": {
+        "originalPrice": "R$ 17.494,00",
+        "installmentPrice": "R$ 1.514,56",
+        "pixPrice": "R$ 15.939,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-pro-14-m4-pro-24gb",
+    "model": "MacBook Pro 14",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Tela Liquid Retina XDR 14.2\", Chip M4 Pro (12/14-core CPU, 16/20-core GPU), 24 GB de memória unificada, 3x Thunderbolt 5, HDMI, SDXC, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1C1C1E"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Black": {
+        "originalPrice": "R$ 15.970,00",
+        "installmentPrice": "R$ 1.382,59",
+        "pixPrice": "R$ 14.550,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-pro-14-m5-16gb",
+    "model": "MacBook Pro 14",
+    "category": "macbooks",
+    "section": "Linha M5",
+    "specs": "Tela Liquid Retina XDR 14.2\", Chip M5 (próxima geração), 16 GB de memória unificada, Thunderbolt 5, HDMI, SDXC, MagSafe 3, Wi-Fi 7.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB",
+      "1TB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1C1C1E"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Black": {
+        "originalPrice": "R$ 13.287,00",
+        "installmentPrice": "R$ 1.150,31",
+        "pixPrice": "R$ 12.106,00"
+      },
+      "1TB-Space Black": {
+        "originalPrice": "R$ 14.933,00",
+        "installmentPrice": "R$ 1.292,84",
+        "pixPrice": "R$ 13.606,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-air-15-m4-16gb",
+    "model": "MacBook Air 15",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Tela Liquid Retina 15.3\", Chip M4 (10-core CPU, 10-core GPU), 16 GB de memória unificada, 2x Thunderbolt / USB 4, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Midnight",
+        "hex": "#1C1C2E"
+      },
+      {
+        "name": "Silver",
+        "hex": "#C0C0C0"
+      },
+      {
+        "name": "Skyblue",
+        "hex": "#87CEEB"
+      }
+    ],
+    "pricing": {
+      "256GB-Midnight": {
+        "originalPrice": "R$ 10.665,00",
+        "installmentPrice": "R$ 923,32",
+        "pixPrice": "R$ 9.717,00"
+      },
+      "256GB-Silver": {
+        "originalPrice": "R$ 10.665,00",
+        "installmentPrice": "R$ 923,32",
+        "pixPrice": "R$ 9.717,00"
+      },
+      "256GB-Skyblue": {
+        "originalPrice": "R$ 10.665,00",
+        "installmentPrice": "R$ 923,32",
+        "pixPrice": "R$ 9.717,00"
+      },
+      "512GB-Midnight": {
+        "originalPrice": "R$ 11.885,00",
+        "installmentPrice": "R$ 1.028,90",
+        "pixPrice": "R$ 10.828,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-air-13-m4-16gb",
+    "model": "MacBook Air 13",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Tela Liquid Retina 13.6\", Chip M4 (10-core CPU, 10-core GPU), 16 GB de memória unificada, 2x Thunderbolt / USB 4, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Midnight",
+        "hex": "#1C1C2E"
+      },
+      {
+        "name": "Silver",
+        "hex": "#C0C0C0"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#F5E6D3"
+      },
+      {
+        "name": "Skyblue",
+        "hex": "#87CEEB"
+      }
+    ],
+    "pricing": {
+      "256GB-Skyblue": {
+        "originalPrice": "R$ 8.104,00",
+        "installmentPrice": "R$ 701,60",
+        "pixPrice": "R$ 7.384,00"
+      },
+      "256GB-Midnight": {
+        "originalPrice": "R$ 8.104,00",
+        "installmentPrice": "R$ 701,60",
+        "pixPrice": "R$ 7.384,00"
+      },
+      "256GB-Silver": {
+        "originalPrice": "R$ 8.165,00",
+        "installmentPrice": "R$ 706,88",
+        "pixPrice": "R$ 7.439,00"
+      },
+      "256GB-Starlight": {
+        "originalPrice": "R$ 8.104,00",
+        "installmentPrice": "R$ 701,60",
+        "pixPrice": "R$ 7.384,00"
+      },
+      "512GB-Silver": {
+        "originalPrice": "R$ 9.689,00",
+        "installmentPrice": "R$ 838,86",
+        "pixPrice": "R$ 8.828,00"
+      },
+      "512GB-Starlight": {
+        "originalPrice": "R$ 9.689,00",
+        "installmentPrice": "R$ 838,86",
+        "pixPrice": "R$ 8.828,00"
+      },
+      "512GB-Skyblue": {
+        "originalPrice": "R$ 9.689,00",
+        "installmentPrice": "R$ 838,86",
+        "pixPrice": "R$ 8.828,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-air-15-m3-8gb",
+    "model": "MacBook Air 15",
+    "category": "macbooks",
+    "section": "Linha M3 / M2 / M1",
+    "specs": "Tela Liquid Retina 15.3\", Chip M3 (8-core CPU, 10-core GPU), 8 GB de memória unificada, 2x Thunderbolt / USB 4, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Gray",
+        "hex": "#4A4A4A"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Gray": {
+        "originalPrice": "R$ 9.567,00",
+        "installmentPrice": "R$ 828,30",
+        "pixPrice": "R$ 8.717,00"
+      }
+    }
+  },
+  {
+    "slug": "macbook-air-15-m3-16gb",
+    "model": "MacBook Air 15",
+    "category": "macbooks",
+    "section": "Linha M3 / M2 / M1",
+    "specs": "Tela Liquid Retina 15.3\", Chip M3 (8-core CPU, 10-core GPU), 16 GB de memória unificada, 2x Thunderbolt / USB 4, MagSafe 3, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Midnight",
+        "hex": "#1C1C2E"
+      }
+    ],
+    "pricing": {
+      "256GB-Midnight": {
+        "originalPrice": "R$ 8.592,00",
+        "installmentPrice": "R$ 743,83",
+        "pixPrice": "R$ 7.828,00"
+      }
+    }
+  },
+  {
+    "slug": "mac-mini-m4-16gb",
+    "model": "Mac Mini M4 16GB",
+    "category": "macbooks",
+    "section": "Linha M4",
+    "specs": "Chip M4 (10-core CPU, 10-core GPU), 16 GB de memória unificada, 2x USB-C (frente), 3x Thunderbolt 4 (trás), HDMI, Gigabit Ethernet, Wi-Fi 6E.",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Silver",
+        "hex": "#C0C0C0"
+      }
+    ],
+    "pricing": {
+      "256GB-Silver": {
+        "originalPrice": "R$ 4.994,00",
+        "installmentPrice": "R$ 432,38",
+        "pixPrice": "R$ 4.550,00"
+      },
+      "512GB-Silver": {
+        "originalPrice": "R$ 7.494,00",
+        "installmentPrice": "R$ 648,81",
+        "pixPrice": "R$ 6.828,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-pro-m5-13-wifi-celular",
+    "model": "iPad Pro M5 13",
+    "category": "ipads",
+    "section": "iPad Pro",
+    "specs": "Chip M5, Tela Ultra Retina XDR 13\", Face ID, USB-C (Thunderbolt/USB 4), Wi-Fi 6E + 5G",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB",
+      "1TB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      }
+    ],
+    "pricing": {
+      "1TB-Space Black": {
+        "originalPrice": "R$ 18.188,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 16.369,00"
+      },
+      "512GB-Space Black": {
+        "originalPrice": "R$ 15.410,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 13.869,00"
+      },
+      "256GB-Space Black": {
+        "originalPrice": "R$ 13.049,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 11.744,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-pro-m5-13-wifi",
+    "model": "iPad Pro M5 13",
+    "category": "ipads",
+    "section": "iPad Pro",
+    "specs": "Chip M5, Tela Ultra Retina XDR 13\", Face ID, USB-C (Thunderbolt/USB 4), Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB",
+      "512GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      }
+    ],
+    "pricing": {
+      "512GB-Space Black": {
+        "originalPrice": "R$ 14.021,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 12.619,00"
+      },
+      "512GB-Silver": {
+        "originalPrice": "R$ 14.021,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 12.619,00"
+      },
+      "256GB-Space Black": {
+        "originalPrice": "R$ 12.424,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 11.182,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-pro-m5-11-wifi",
+    "model": "iPad Pro M5 11",
+    "category": "ipads",
+    "section": "iPad Pro",
+    "specs": "Chip M5, Tela Ultra Retina XDR 11\", Face ID, USB-C (Thunderbolt/USB 4), Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      }
+    ],
+    "pricing": {
+      "256GB-Space Black": {
+        "originalPrice": "R$ 8.813,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.932,00"
+      },
+      "256GB-Silver": {
+        "originalPrice": "R$ 8.813,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.932,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-pro-m4-13-wifi",
+    "model": "iPad Pro M4 13",
+    "category": "ipads",
+    "section": "iPad Pro",
+    "specs": "Chip M4, Tela Ultra Retina XDR 13\", Face ID, USB-C (Thunderbolt/USB 4), Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      }
+    ],
+    "pricing": {
+      "256GB-Space Black": {
+        "originalPrice": "R$ 10.660,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 9.406,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-pro-m4-11-wifi",
+    "model": "iPad Pro M4 11",
+    "category": "ipads",
+    "section": "iPad Pro",
+    "specs": "Chip M4, Tela Ultra Retina XDR 11\", Face ID, USB-C (Thunderbolt/USB 4), Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Black",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      }
+    ],
+    "pricing": {
+      "256GB-Space Black": {
+        "originalPrice": "R$ 7.994,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.053,00"
+      },
+      "256GB-Silver": {
+        "originalPrice": "R$ 7.994,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.053,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-air-m3-13-wifi-celular",
+    "model": "iPad Air M3 13",
+    "category": "ipads",
+    "section": "iPad Air",
+    "specs": "Chip M3, Tela Liquid Retina 13\", Touch ID, USB-C, Wi-Fi 6E + 5G, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Gray",
+        "hex": "#86868b"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      },
+      {
+        "name": "Roxo",
+        "hex": "#b8a9c9"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      }
+    ],
+    "pricing": {
+      "128GB-Roxo": {
+        "originalPrice": "R$ 8.927,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.877,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-air-m3-13-wifi",
+    "model": "iPad Air M3 13",
+    "category": "ipads",
+    "section": "iPad Air",
+    "specs": "Chip M3, Tela Liquid Retina 13\", Touch ID, USB-C, Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Gray",
+        "hex": "#86868b"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      },
+      {
+        "name": "Roxo",
+        "hex": "#b8a9c9"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      }
+    ],
+    "pricing": {
+      "128GB-Starlight": {
+        "originalPrice": "R$ 7.460,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 6.583,00"
+      },
+      "128GB-Space Gray": {
+        "originalPrice": "R$ 7.460,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 6.583,00"
+      },
+      "128GB-Roxo": {
+        "originalPrice": "R$ 7.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 6.406,00"
+      },
+      "128GB-Azul": {
+        "originalPrice": "R$ 7.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 6.406,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-air-m3-11-wifi-celular",
+    "model": "iPad Air M3 11",
+    "category": "ipads",
+    "section": "iPad Air",
+    "specs": "Chip M3, Tela Liquid Retina 11\", Touch ID, USB-C, Wi-Fi 6E + 5G, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB",
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Gray",
+        "hex": "#86868b"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      },
+      {
+        "name": "Roxo",
+        "hex": "#b8a9c9"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      }
+    ],
+    "pricing": {
+      "256GB-Starlight": {
+        "originalPrice": "R$ 8.794,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.759,00"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 8.794,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 7.759,00"
+      },
+      "128GB-Space Gray": {
+        "originalPrice": "R$ 7.594,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 6.700,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-air-m3-11-wifi",
+    "model": "iPad Air M3 11",
+    "category": "ipads",
+    "section": "iPad Air",
+    "specs": "Chip M3, Tela Liquid Retina 11\", Touch ID, USB-C, Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB",
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Space Gray",
+        "hex": "#86868b"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      },
+      {
+        "name": "Roxo",
+        "hex": "#b8a9c9"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      }
+    ],
+    "pricing": {
+      "256GB-Starlight": {
+        "originalPrice": "R$ 6.594,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.818,00"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 6.594,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.818,00"
+      },
+      "256GB-Roxo": {
+        "originalPrice": "R$ 6.594,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.818,00"
+      },
+      "128GB-Starlight": {
+        "originalPrice": "R$ 5.594,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 4.936,00"
+      },
+      "128GB-Space Gray": {
+        "originalPrice": "R$ 5.394,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 4.759,00"
+      },
+      "128GB-Roxo": {
+        "originalPrice": "R$ 5.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 4.642,00"
+      },
+      "128GB-Azul": {
+        "originalPrice": "R$ 5.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 4.642,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-11-wifi",
+    "model": "iPad 11 Wi-Fi",
+    "category": "ipads",
+    "section": "iPad",
+    "specs": "Chip A16, Tela Liquid Retina 10.9\", Touch ID, USB-C, Wi-Fi 6, Bluetooth 5.2",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "128GB",
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Prata",
+        "hex": "#e3e4e5"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      },
+      {
+        "name": "Rosa",
+        "hex": "#f5c5c5"
+      },
+      {
+        "name": "Amarelo",
+        "hex": "#f5e6a3"
+      }
+    ],
+    "pricing": {
+      "256GB-Prata": {
+        "originalPrice": "R$ 4.460,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.936,00"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 4.460,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.936,00"
+      },
+      "256GB-Rosa": {
+        "originalPrice": "R$ 4.460,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.936,00"
+      },
+      "128GB-Prata": {
+        "originalPrice": "R$ 3.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.877,00"
+      },
+      "128GB-Amarelo": {
+        "originalPrice": "R$ 3.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.877,00"
+      },
+      "128GB-Azul": {
+        "originalPrice": "R$ 3.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.877,00"
+      },
+      "128GB-Rosa": {
+        "originalPrice": "R$ 3.260,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.877,00"
+      }
+    }
+  },
+  {
+    "slug": "ipad-10-wifi",
+    "model": "iPad 10 Wi-Fi",
+    "category": "ipads",
+    "section": "iPad",
+    "specs": "Chip A14 Bionic, Tela Liquid Retina 10.9\", Touch ID, USB-C, Wi-Fi 6, Bluetooth 5.2",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "256GB"
+    ],
+    "colors": [
+      {
+        "name": "Prata",
+        "hex": "#e3e4e5"
+      },
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      },
+      {
+        "name": "Rosa",
+        "hex": "#f5c5c5"
+      },
+      {
+        "name": "Amarelo",
+        "hex": "#f5e6a3"
+      }
+    ],
+    "pricing": {
+      "256GB-Prata": {
+        "originalPrice": "R$ 3.860,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.406,00"
+      },
+      "256GB-Azul": {
+        "originalPrice": "R$ 3.860,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.406,00"
+      },
+      "256GB-Rosa": {
+        "originalPrice": "R$ 3.860,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.406,00"
+      },
+      "256GB-Amarelo": {
+        "originalPrice": "R$ 3.860,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.406,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-watch-ultra-3-ocean",
+    "model": "Apple Watch Ultra 3 Ocean",
+    "category": "apple-watch",
+    "section": "Ultra",
+    "specs": "Chip S11 SiP, Tela Retina Sempre Ativa LTPO OLED (até 4000 nits), GPS de precisão e dupla frequência, Botão de Ação, Sirene, Profundímetro, Sensor de temperatura da água, Oxigênio no Sangue, ECG, Sensor cardíaco óptico, Detecção de Queda/Acidente, Resistência à água 100m, Certificação MIL-STD 810H, Mergulho recreativo até 40m, Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "49mm"
+    ],
+    "colors": [
+      {
+        "name": "Natural",
+        "hex": "#c4b5a0"
+      },
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      }
+    ],
+    "pricing": {
+      "49mm-Natural": {
+        "originalPrice": "R$ 6.661,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.904,00"
+      },
+      "49mm-Preto": {
+        "originalPrice": "R$ 5.956,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.279,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-watch-series-11-sport-band",
+    "model": "Apple Watch Series 11 Sport Band",
+    "category": "apple-watch",
+    "section": "Series",
+    "specs": "Chip S11 SiP, Tela Retina Sempre Ativa LTPO OLED (até 3000 nits), Oxigênio no Sangue, ECG, Sensor cardíaco óptico, Detecção de Queda/Acidente, Sensor de temperatura, Resistência à água 50m, GPS, Wi-Fi 6E, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "42mm",
+      "46mm"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Space Gray",
+        "hex": "#86868b"
+      },
+      {
+        "name": "Silver",
+        "hex": "#e3e4e5"
+      },
+      {
+        "name": "Rose",
+        "hex": "#e8c4b8"
+      }
+    ],
+    "pricing": {
+      "46mm-Preto": {
+        "originalPrice": "R$ 3.452,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.994,00"
+      },
+      "46mm-Space Gray": {
+        "originalPrice": "R$ 3.452,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.994,00"
+      },
+      "46mm-Silver": {
+        "originalPrice": "R$ 3.452,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.994,00"
+      },
+      "46mm-Rose": {
+        "originalPrice": "R$ 3.452,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.994,00"
+      },
+      "42mm-Preto": {
+        "originalPrice": "R$ 3.257,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.826,00"
+      },
+      "42mm-Space Gray": {
+        "originalPrice": "R$ 3.257,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.826,00"
+      },
+      "42mm-Silver": {
+        "originalPrice": "R$ 3.257,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.826,00"
+      },
+      "42mm-Rose": {
+        "originalPrice": "R$ 3.257,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.826,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-watch-se-3-sport-band",
+    "model": "Apple Watch SE 3 Sport Band",
+    "category": "apple-watch",
+    "section": "SE",
+    "specs": "Chip S10 SiP, Tela Retina LTPO OLED (até 1000 nits), Sensor cardíaco óptico, Detecção de Queda/Acidente, Resistência à água 50m, GPS, Wi-Fi 6, Bluetooth 5.3",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "40mm",
+      "44mm"
+    ],
+    "colors": [
+      {
+        "name": "Midnight",
+        "hex": "#1d1d2c"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      }
+    ],
+    "pricing": {
+      "44mm-Midnight": {
+        "originalPrice": "R$ 2.896,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.512,00"
+      },
+      "40mm-Midnight": {
+        "originalPrice": "R$ 2.770,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.403,00"
+      },
+      "40mm-Starlight": {
+        "originalPrice": "R$ 2.770,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.403,00"
+      }
+    }
+  },
+  {
+    "slug": "airpods-max",
+    "model": "AirPods Max",
+    "category": "acessorios",
+    "section": "Áudio",
+    "specs": "Chip H2, Cancelamento Ativo de Ruído, Modo Ambiente Adaptável, Áudio Espacial Personalizado com rastreamento dinâmico da cabeça, Equalização Adaptativa, Até 20h de áudio com ANC, USB-C",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Azul",
+        "hex": "#5b7fa6"
+      },
+      {
+        "name": "Roxo",
+        "hex": "#b8a9c9"
+      },
+      {
+        "name": "Starlight",
+        "hex": "#f0e4d3"
+      },
+      {
+        "name": "Midnight",
+        "hex": "#1d1d2c"
+      },
+      {
+        "name": "Orange",
+        "hex": "#e8734a"
+      }
+    ],
+    "pricing": {
+      "Único-Azul": {
+        "originalPrice": "R$ 6.468,33",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.739,00"
+      },
+      "Único-Roxo": {
+        "originalPrice": "R$ 6.468,33",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.739,00"
+      },
+      "Único-Starlight": {
+        "originalPrice": "R$ 6.468,33",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.739,00"
+      },
+      "Único-Midnight": {
+        "originalPrice": "R$ 6.468,33",
+        "installmentPrice": "",
+        "pixPrice": "R$ 5.739,00"
+      }
+    }
+  },
+  {
+    "slug": "airpods-pro-3",
+    "model": "AirPods Pro 3",
+    "category": "acessorios",
+    "section": "Áudio",
+    "specs": "Chip H3, Cancelamento Ativo de Ruído aprimorado, Modo Ambiente Adaptável, Áudio Espacial Personalizado, Controle por Toque, Resistência a poeira, suor e água (IP54), Estojo de carregamento MagSafe (USB-C)",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 2.109,36",
+        "installmentPrice": "",
+        "pixPrice": "R$ 1.879,00"
+      }
+    }
+  },
+  {
+    "slug": "airpods-4",
+    "model": "AirPods 4",
+    "category": "acessorios",
+    "section": "Áudio",
+    "specs": "...",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Com ANC",
+      "Sem ANC"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Com ANC-Branco": {
+        "originalPrice": "R$ 1.468,33",
+        "installmentPrice": "",
+        "pixPrice": "R$ 1.339,00"
+      },
+      "Sem ANC-Branco": {
+        "originalPrice": "R$ 1.083,72",
+        "installmentPrice": "",
+        "pixPrice": "R$ 979,00"
+      }
+    }
+  },
+  {
+    "slug": "magic-keyboard-ipad-pro-13",
+    "model": "Magic Keyboard iPad Pro 13",
+    "category": "acessorios",
+    "section": "Teclados e Mouse",
+    "specs": "Teclado Magic Keyboard para iPad Pro de 13 polegadas (M4 e M5), trackpad integrado, design flutuante, USB-C para carregamento passthrough",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Preto": {
+        "originalPrice": "R$ 4.393,73",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.879,00"
+      },
+      "Único-Branco": {
+        "originalPrice": "R$ 4.393,73",
+        "installmentPrice": "",
+        "pixPrice": "R$ 3.879,00"
+      }
+    }
+  },
+  {
+    "slug": "magic-keyboard-ipad-pro-11",
+    "model": "Magic Keyboard iPad Pro 11",
+    "category": "acessorios",
+    "section": "Teclados e Mouse",
+    "specs": "Teclado Magic Keyboard para iPad Pro de 11 polegadas (M4 e M5), trackpad integrado, design flutuante, USB-C para carregamento passthrough",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Preto": {
+        "originalPrice": "R$ 3.326,81",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.939,00"
+      },
+      "Único-Branco": {
+        "originalPrice": "R$ 3.326,81",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.939,00"
+      }
+    }
+  },
+  {
+    "slug": "magic-keyboard-touch-id",
+    "model": "Magic Keyboard com Touch ID e Teclado Numérico",
+    "category": "acessorios",
+    "section": "Teclados e Mouse",
+    "specs": "Magic Keyboard com Touch ID e teclado numérico, conexão Bluetooth, bateria recarregável via USB-C, compatível com Mac",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      },
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 2.779,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 2.439,00"
+      }
+    }
+  },
+  {
+    "slug": "magic-mouse",
+    "model": "Magic Mouse",
+    "category": "acessorios",
+    "section": "Teclados e Mouse",
+    "specs": "Magic Mouse com superfície Multi-Touch, conexão Bluetooth, bateria recarregável via USB-C, compatível com Mac",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Preto",
+        "hex": "#1d1d1f"
+      },
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Preto": {
+        "originalPrice": "R$ 1.316,62",
+        "installmentPrice": "",
+        "pixPrice": "R$ 1.199,00"
+      },
+      "Único-Branco": {
+        "originalPrice": "R$ 1.243,09",
+        "installmentPrice": "",
+        "pixPrice": "R$ 1.079,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-pencil-pro",
+    "model": "Apple Pencil Pro",
+    "category": "acessorios",
+    "section": "Apple Pencil",
+    "specs": "Pareamento e carga sem fio, Precisão absoluta, Sensibilidade à inclinação e pressão, Baixa latência, Gesto de apertar, Rotação do sensor giroscópico, Resposta tátil, Buscar Apple Pencil, Ponta substituível",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 1.390,15",
+        "installmentPrice": "",
+        "pixPrice": "R$ 1.239,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-pencil-2",
+    "model": "Apple Pencil 2ª Geração",
+    "category": "acessorios",
+    "section": "Apple Pencil",
+    "specs": "Pareamento e carga magnética, Precisão absoluta, Sensibilidade à inclinação e pressão, Baixa latência, Dois toques para trocar de ferramenta, Ponta substituível",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 1.096,03",
+        "installmentPrice": "",
+        "pixPrice": "R$ 939,00"
+      }
+    }
+  },
+  {
+    "slug": "apple-pencil-usbc",
+    "model": "Apple Pencil USB-C",
+    "category": "acessorios",
+    "section": "Apple Pencil",
+    "specs": "Pareamento e carga via USB-C, Precisão absoluta, Sensibilidade à inclinação, Baixa latência, Ponta substituível",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 1.169,56",
+        "installmentPrice": "",
+        "pixPrice": "R$ 999,00"
+      }
+    }
+  },
+  {
+    "slug": "airtag",
+    "model": "AirTag",
+    "category": "acessorios",
+    "section": "AirTag",
+    "specs": "...",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "1 unidade",
+      "4 unidades"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "1 unidade-Branco": {
+        "originalPrice": "R$ 507,79",
+        "installmentPrice": "",
+        "pixPrice": "R$ 439,00"
+      },
+      "4 unidades-Branco": {
+        "originalPrice": "R$ 948,97",
+        "installmentPrice": "",
+        "pixPrice": "R$ 839,00"
+      }
+    }
+  },
+  {
+    "slug": "adaptador-usbc-20w",
+    "model": "Adaptador de Energia USB-C de 20W",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Adaptador de energia USB-C de 20W, Carregamento rápido para iPhones e iPads compatíveis",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 250,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 179,00"
+      }
+    }
+  },
+  {
+    "slug": "adaptador-usbc-35w",
+    "model": "Adaptador de Energia USB-C de 35W",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Adaptador de energia USB-C de 35W com duas portas, Carregamento rápido para iPhones, iPads e MacBooks compatíveis",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 350,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 279,00"
+      }
+    }
+  },
+  {
+    "slug": "carregador-magsafe",
+    "model": "Carregador MagSafe (1m)",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Carregador MagSafe com cabo de 1m, alinhamento magnético perfeito, carregamento rápido sem fio para iPhones e AirPods compatíveis",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 390,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 219,00"
+      }
+    }
+  },
+  {
+    "slug": "cabo-usbc-240w-2m",
+    "model": "Cabo USB-C 240W (2m)",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Cabo para recarga de 240W com conector USB-C (2m), suporta carregamento e transferência de dados",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 390,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 219,00"
+      }
+    }
+  },
+  {
+    "slug": "cabo-usbc-60w-1m",
+    "model": "Cabo USB-C 60W (1m)",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Cabo para recarga de 60W com conector USB-C (1m), suporta carregamento e transferência de dados",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 390,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 179,00"
+      }
+    }
+  },
+  {
+    "slug": "cabo-usbc-lightning-1m",
+    "model": "Cabo USB-C para Lightning (1m)",
+    "category": "acessorios",
+    "section": "Cabos e Carregadores",
+    "specs": "Cabo de USB-C para Lightning (1m), suporta carregamento e transferência de dados",
+    "details": "aparelho novo",
+    "battery": "100%",
+    "storages": [
+      "Único"
+    ],
+    "colors": [
+      {
+        "name": "Branco",
+        "hex": "#f5f5f0"
+      }
+    ],
+    "pricing": {
+      "Único-Branco": {
+        "originalPrice": "R$ 390,00",
+        "installmentPrice": "",
+        "pixPrice": "R$ 179,00"
+      }
+    }
+  }
+]

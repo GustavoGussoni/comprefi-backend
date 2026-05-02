@@ -9,6 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TradeModule = void 0;
 const common_1 = require("@nestjs/common");
 const trade_controller_1 = require("./trade.controller");
+const valor_troca_controller_1 = require("./valor-troca.controller");
+const questionario_controller_1 = require("./questionario.controller");
 const trade_calculator_service_1 = require("./services/trade-calculator.service");
 const prisma_service_1 = require("../../database/prisma.service");
 let TradeModule = class TradeModule {
@@ -16,7 +18,7 @@ let TradeModule = class TradeModule {
 exports.TradeModule = TradeModule;
 exports.TradeModule = TradeModule = __decorate([
     (0, common_1.Module)({
-        controllers: [trade_controller_1.TradeController],
+        controllers: [trade_controller_1.TradeController, valor_troca_controller_1.ValorTrocaController, questionario_controller_1.QuestionarioController],
         providers: [trade_calculator_service_1.TradeCalculatorService, prisma_service_1.PrismaService],
         exports: [trade_calculator_service_1.TradeCalculatorService],
     })

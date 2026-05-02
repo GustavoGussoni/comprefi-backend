@@ -1,5 +1,5 @@
-// Schema Prisma adaptado para o padrão de produtos da CompreFi
-// Baseado na estrutura de dados do frontend atual
+// Schema Prisma — CompreFi v2
+// Abordagem híbrida: imagens no frontend, preços e disponibilidade no backend
 
 generator client {
   provider = "prisma-client-js"
@@ -9,6 +9,10 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ============================================
+// Auth
+// ============================================
 
 model User {
   id       String    @id @default(uuid())
@@ -23,44 +27,99 @@ model User {
   @@map("users")
 }
 
+// ============================================
+// Produtos (modelo flat legado — mantido para compatibilidade com funil de troca)
+// ============================================
+
 model Product {
   id               String   @id @default(uuid())
-  model            String   // Ex: "iPhone 15 Pro Max", "MacBook Pro 16" M4 Max"
-  storage          String?   // Ex: "256GB", "(1TB)", "(48GB RAM / 1TB SSD)"
-  color            String   // Ex: "Titânio Natural", "Prata, Preto-espacial"
-  battery          String?   // Ex: "89%", "100%"
-  originalPrice    String   // Ex: "R$ 6.590,00" (preço de referência para alavancagem)
-  installmentPrice String   // Ex: "R$ 540,67", "12x R$ 3.151,00" (preço parcelado)
-  pixPrice         String   // Ex: "R$ 5.690" (preço à vista no PIX)
-  details          String   // Ex: "sem detalhes | garantia Apple até junho"
-  image            String?  // URL da imagem principal do produto
-  realImages       String[] // Array de URLs das fotos reais do produto
-  category         String   // Ex: "iPhones Seminovos", "iPhones Novos", "Macbooks"
-  specs            String   // Especificações técnicas detalhadas
+  model            String
+  storage          String?
+  color            String
+  battery          String?
+  originalPrice    String
+  installmentPrice String
+  pixPrice         String
+  details          String
+  image            String?
+  realImages       String[]
+  category         String
+  specs            String
   
-  // Campos para cálculos automáticos (opcionais, para integração com planilha)
-  cost             Float?   // Custo base do produto (para cálculos automáticos)
-  freight          Float?   // Valor do frete (padrão: 100)
+  cost             Float?
+  freight          Float?
   
-  // Campos de controle
   isActive         Boolean  @default(true)
-  isNew            Boolean  @default(true) // true para produtos novos, false para seminovos
+  isNew            Boolean  @default(true)
   
-  // Relacionamentos
   user             User     @relation(fields: [userId], references: [id])
   userId           String
   
-  // Timestamps
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@map("products")
 }
 
+// ============================================
+// Catálogo GroupedProduct (v2)
+// ============================================
+
+model ProductGroup {
+  id          String   @id @default(cuid())
+  slug        String   @unique        // ex: "iphone-17-pro-max"
+  model       String                  // ex: "iPhone 17 Pro Max"
+  category    String                  // ex: "iphones-novos"
+  section     String?                 // ex: "Linha M5", "iPad Pro", "Ultra" (para sub-seções)
+  specs       String?                 // descrição técnica
+  details     String?                 // ex: "aparelho novo"
+  battery     String?                 // ex: "100%"
+  storages    String[]                // ex: ["256GB", "512GB", "1TB"]
+  
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)    // ordem de exibição dentro da categoria
+  
+  variants    ProductVariant[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([category, section])
+  @@map("product_groups")
+}
+
+model ProductVariant {
+  id               String   @id @default(cuid())
+  
+  storage          String                  // ex: "256GB"
+  color            String                  // ex: "Prata"
+  
+  originalPrice    String                  // ex: "R$ 9.469,00"
+  installmentPrice String                  // ex: "R$ 830,84"
+  pixPrice         String                  // ex: "R$ 8.743"
+  
+  isActive         Boolean  @default(true)
+  
+  productGroup     ProductGroup @relation(fields: [productGroupId], references: [id], onDelete: Cascade)
+  productGroupId   String
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([productGroupId, storage, color])
+  @@index([productGroupId])
+  @@map("product_variants")
+}
+
+// ============================================
+// Configurações
+// ============================================
+
 model Category {
   id          String   @id @default(uuid())
-  name        String   @unique // Ex: "iPhones Seminovos", "iPhones Novos", "Macbooks"
-  slug        String   @unique // Ex: "iphones-seminovos", "iphones-novos", "macbooks"
+  name        String   @unique
+  slug        String   @unique
   description String?
   isActive    Boolean  @default(true)
   
@@ -74,7 +133,7 @@ model ProductImage {
   id        String   @id @default(uuid())
   productId String
   imageUrl  String
-  imageType String   // "main", "real", "gallery"
+  imageType String
   order     Int      @default(0)
   
   createdAt DateTime @default(now())
@@ -83,15 +142,14 @@ model ProductImage {
   @@map("product_images")
 }
 
-// Tabela para armazenar configurações de preços e cálculos
 model PriceConfig {
   id                String   @id @default(uuid())
-  name              String   @unique // Ex: "default", "iphones", "macbooks"
+  name              String   @unique
   freightValue      Float    @default(100)
-  pixMultiplier     Float    @default(0.9)   // Divisor para preço PIX: (custo + frete) / 0.9
-  installmentDiv1   Float    @default(0.8651) // Primeiro divisor para parcelas
-  installmentDiv2   Int      @default(12)     // Número de parcelas
-  originalPricePerc Float    @default(1.2)    // Percentual sobre PIX para preço original
+  pixMultiplier     Float    @default(0.9)
+  installmentDiv1   Float    @default(0.8651)
+  installmentDiv2   Int      @default(12)
+  originalPricePerc Float    @default(1.2)
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -99,7 +157,9 @@ model PriceConfig {
   @@map("price_configs")
 }
 
-// troca
+// ============================================
+// Troca
+// ============================================
 
 model ValorTroca {
   id          String   @id @default(cuid())
