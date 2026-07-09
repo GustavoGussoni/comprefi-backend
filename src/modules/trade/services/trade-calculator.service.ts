@@ -210,6 +210,36 @@ export class TradeCalculatorService {
   }
 
   private async getProdutoDesejado(modeloDesejado: string) {
+    // Primeiro tenta buscar no catálogo v2 (ProductVariant + ProductGroup)
+    const variant = await this.prisma.productVariant.findFirst({
+      where: {
+        isActive: true,
+        productGroup: {
+          model: {
+            contains: modeloDesejado,
+            mode: "insensitive",
+          },
+          isActive: true,
+        },
+      },
+      include: {
+        productGroup: true,
+      },
+      orderBy: {
+        pixPrice: "asc", // Pegar a variante mais barata (menor storage)
+      },
+    });
+
+    if (variant) {
+      return {
+        modelo: `${variant.productGroup.model} ${variant.storage} ${variant.color}`,
+        pixPrice: variant.pixPrice,
+        installmentPrice: variant.installmentPrice,
+        originalPrice: variant.originalPrice,
+      };
+    }
+
+    // Fallback: buscar na tabela Product legada
     const produto = await this.prisma.product.findFirst({
       where: {
         model: {
@@ -289,11 +319,9 @@ export class TradeCalculatorService {
       "iPhone 11": ["64GB", "128GB", "256GB"],
       "iPhone 11 Pro": ["64GB", "256GB", "512GB"],
       "iPhone 11 Pro Max": ["64GB", "256GB", "512GB"],
-      "iPhone 12 mini": ["64GB", "128GB", "256GB"],
       "iPhone 12": ["64GB", "128GB", "256GB"],
       "iPhone 12 Pro": ["128GB", "256GB", "512GB"],
       "iPhone 12 Pro Max": ["128GB", "256GB", "512GB"],
-      "iPhone 13 mini": ["128GB", "256GB", "512GB"],
       "iPhone 13": ["128GB", "256GB", "512GB"],
       "iPhone 13 Pro": ["128GB", "256GB", "512GB", "1TB"],
       "iPhone 13 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
@@ -309,34 +337,42 @@ export class TradeCalculatorService {
       "iPhone 16 Plus": ["128GB", "256GB", "512GB"],
       "iPhone 16 Pro": ["128GB", "256GB", "512GB", "1TB"],
       "iPhone 16 Pro Max": ["256GB", "512GB", "1TB"],
-      "iPhone SE (3ª geração)": ["64GB", "128GB", "256GB"],
     };
 
     return combinations;
   }
 
   async getColorsByModel(modelo: string): Promise<string[]> {
-    // Cores por modelo (simplificado)
+    // Cores por modelo e geração
     const colorMap: Record<string, string[]> = {
+      // iPhone 11
       "iPhone 11": ["Preto", "Branco", "Vermelho", "Amarelo", "Roxo", "Verde"],
+      "iPhone 11 Pro": ["Dourado", "Cinza Espacial", "Prateado", "Verde Meia-noite"],
+      "iPhone 11 Pro Max": ["Dourado", "Cinza Espacial", "Prateado", "Verde Meia-noite"],
+      // iPhone 12
       "iPhone 12": ["Preto", "Branco", "Vermelho", "Verde", "Azul", "Roxo"],
-      "iPhone 13": ["Rosa", "Azul", "Meia-noite", "Estelar", "Vermelho"],
-      "iPhone 14": [
-        "Azul",
-        "Roxo",
-        "Amarelo",
-        "Meia-noite",
-        "Estelar",
-        "Vermelho",
-      ],
+      "iPhone 12 Pro": ["Dourado", "Grafite", "Prateado", "Azul Pacífico"],
+      "iPhone 12 Pro Max": ["Dourado", "Grafite", "Prateado", "Azul Pacífico"],
+      // iPhone 13
+      "iPhone 13": ["Rosa", "Azul", "Meia-noite", "Estelar", "Vermelho", "Verde"],
+      "iPhone 13 Pro": ["Dourado", "Grafite", "Prateado", "Azul Sierra", "Verde Alpino"],
+      "iPhone 13 Pro Max": ["Dourado", "Grafite", "Prateado", "Azul Sierra", "Verde Alpino"],
+      // iPhone 14
+      "iPhone 14": ["Azul", "Roxo", "Amarelo", "Meia-noite", "Estelar", "Vermelho"],
+      "iPhone 14 Plus": ["Azul", "Roxo", "Amarelo", "Meia-noite", "Estelar", "Vermelho"],
+      "iPhone 14 Pro": ["Dourado", "Grafite", "Prateado", "Roxo Profundo"],
+      "iPhone 14 Pro Max": ["Dourado", "Grafite", "Prateado", "Roxo Profundo"],
+      // iPhone 15
       "iPhone 15": ["Rosa", "Amarelo", "Verde", "Azul", "Preto"],
+      "iPhone 15 Plus": ["Rosa", "Amarelo", "Verde", "Azul", "Preto"],
+      "iPhone 15 Pro": ["Titânio Natural", "Titânio Azul", "Titânio Branco", "Titânio Preto"],
+      "iPhone 15 Pro Max": ["Titânio Natural", "Titânio Azul", "Titânio Branco", "Titânio Preto"],
+      // iPhone 16
       "iPhone 16": ["Ultramarino", "Verde-azulado", "Rosa", "Branco", "Preto"],
+      "iPhone 16 Plus": ["Ultramarino", "Verde-azulado", "Rosa", "Branco", "Preto"],
+      "iPhone 16 Pro": ["Titânio Natural", "Titânio Preto", "Titânio Branco", "Titânio Deserto"],
+      "iPhone 16 Pro Max": ["Titânio Natural", "Titânio Preto", "Titânio Branco", "Titânio Deserto"],
     };
-
-    // Para modelos Pro, usar cores padrão
-    if (modelo.includes("Pro")) {
-      return ["Grafite", "Dourado", "Prateado", "Azul Sierra"];
-    }
 
     return colorMap[modelo] || ["Preto", "Branco", "Azul", "Vermelho"];
   }
