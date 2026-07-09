@@ -10,21 +10,41 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PrismaService } from "../../database/prisma.service";
 
-// DTOs inline para simplicidade
+// DTOs com validação
 class CreateValorTrocaDto {
+  @IsString()
   modelo: string;
+
+  @IsString()
   capacidade: string;
+
+  @IsNumber()
   valorBase: number;
+
+  @IsOptional()
+  @IsBoolean()
   ativo?: boolean;
 }
 
 class UpdateValorTrocaDto {
+  @IsOptional()
+  @IsString()
   modelo?: string;
+
+  @IsOptional()
+  @IsString()
   capacidade?: string;
+
+  @IsOptional()
+  @IsNumber()
   valorBase?: number;
+
+  @IsOptional()
+  @IsBoolean()
   ativo?: boolean;
 }
 
