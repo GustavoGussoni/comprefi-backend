@@ -36,9 +36,10 @@ export class TradeCalculatorService {
       }
     }
 
-    // 2. Calcular depreciação por bateria
+    // 2. Calcular depreciação por bateria (proporcional ao valor base)
     const depreciacaoBateria = this.calculateBatteryDepreciation(
-      data.bateriaAtual
+      data.bateriaAtual,
+      valorBase
     );
 
     // 3. Verificar se tem defeitos que exigem cotação manual
@@ -154,11 +155,12 @@ export class TradeCalculatorService {
     });
   }
 
-  private calculateBatteryDepreciation(bateria: number): number {
-    if (bateria === 100) return 200;
-    if (bateria >= 90) return 400;
-    if (bateria >= 80) return 1000;
-    return 1700; // Abaixo de 80%
+  private calculateBatteryDepreciation(bateria: number, valorBase: number): number {
+    // Regra proporcional: desconto é um % do valor base
+    if (bateria >= 99) return Math.round(valorBase * 0.04);  // 99-100% → -4%
+    if (bateria >= 88) return Math.round(valorBase * 0.08);  // 88-98% → -8%
+    if (bateria >= 80) return Math.round(valorBase * 0.16);  // 80-87% → -16%
+    return Math.round(valorBase * 0.32);                     // < 80% → -32%
   }
 
   private calculateDefectsDepreciation(
