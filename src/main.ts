@@ -8,7 +8,13 @@ async function bootstrap() {
 
   const corsOrigins =
     process.env.NODE_ENV === "production"
-      ? [process.env.FRONTEND_URL || "https://seu-frontend.com"]
+      ? [
+          "https://www.comprefi.com",
+          "https://comprefi.com",
+          "https://comprefi.com.br",
+          "https://www.comprefi.com.br",
+          ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+        ]
       : ["http://localhost:5173", "http://localhost:5174"];
 
   app.enableCors({
