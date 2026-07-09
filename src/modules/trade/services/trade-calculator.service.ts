@@ -210,7 +210,22 @@ export class TradeCalculatorService {
   }
 
   private async getProdutoDesejado(modeloDesejado: string) {
-    // Primeiro tenta buscar no catálogo v2 (ProductVariant + ProductGroup)
+    // 1. Tentar buscar por ID direto (o frontend envia o variant ID)
+    const variantById = await this.prisma.productVariant.findUnique({
+      where: { id: modeloDesejado },
+      include: { productGroup: true },
+    }).catch(() => null); // catch caso não seja um ID válido
+
+    if (variantById && variantById.isActive) {
+      return {
+        modelo: `${variantById.productGroup.model} ${variantById.storage} ${variantById.color}`,
+        pixPrice: variantById.pixPrice,
+        installmentPrice: variantById.installmentPrice,
+        originalPrice: variantById.originalPrice,
+      };
+    }
+
+    // 2. Tentar buscar por nome no catálogo v2
     const variant = await this.prisma.productVariant.findFirst({
       where: {
         isActive: true,
@@ -226,7 +241,7 @@ export class TradeCalculatorService {
         productGroup: true,
       },
       orderBy: {
-        pixPrice: "asc", // Pegar a variante mais barata (menor storage)
+        createdAt: "desc",
       },
     });
 
@@ -239,7 +254,7 @@ export class TradeCalculatorService {
       };
     }
 
-    // Fallback: buscar na tabela Product legada
+    // 3. Fallback: buscar na tabela Product legada
     const produto = await this.prisma.product.findFirst({
       where: {
         model: {
