@@ -1,13 +1,16 @@
-import { Controller, Post, Get, Body, Param } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { TradeCalculatorService } from "./services/trade-calculator.service";
 import { CalculateTradeDto, TradeResultDto } from "./dto/calculate-trade.dto";
+import { SubmitTradeContactDto } from "./dto/submit-trade-contact.dto";
+import { TradeLeadService } from "./services/trade-lead.service";
 
 @ApiTags("Trade Calculator")
 @Controller("trade")
 export class TradeController {
   constructor(
-    private readonly tradeCalculatorService: TradeCalculatorService
+    private readonly tradeCalculatorService: TradeCalculatorService,
+    private readonly tradeLeadService: TradeLeadService,
   ) {}
 
   @Post("calculate")
@@ -25,6 +28,24 @@ export class TradeController {
     @Body() calculateTradeDto: CalculateTradeDto
   ): Promise<TradeResultDto> {
     return this.tradeCalculatorService.calculateTrade(calculateTradeDto);
+  }
+
+  @Post("questionarios/:id/contact")
+  @HttpCode(200)
+  @ApiOperation({
+    summary: "Salvar contato da simulação e encaminhar ao DataCrazy",
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      "Contato salvo; a resposta informa separadamente o estado do DataCrazy",
+  })
+  @ApiResponse({ status: 404, description: "Simulação não encontrada" })
+  async submitContact(
+    @Param("id") id: string,
+    @Body() contact: SubmitTradeContactDto,
+  ) {
+    return this.tradeLeadService.submitContact(id, contact);
   }
 
   @Get("combinations")

@@ -19,6 +19,13 @@ enum UserRole {
   SALES
 }
 
+enum CrmDeliveryStatus {
+  NOT_SENT
+  PENDING
+  SENT
+  FAILED
+}
+
 model User {
   id       String    @id @default(uuid())
   name     String
@@ -181,39 +188,50 @@ model ValorTroca {
 }
 
 model QuestionarioTroca {
-  id                  String    @id @default(cuid())
-  modeloAtual         String    @map("modelo_atual")
-  capacidadeAtual     String    @map("capacidade_atual")
-  corAtual            String    @map("cor_atual")
-  bateriaAtual        Int       @map("bateria_atual")
+  id                  String            @id @default(cuid())
+  modeloAtual         String            @map("modelo_atual")
+  capacidadeAtual     String            @map("capacidade_atual")
+  corAtual            String            @map("cor_atual")
+  bateriaAtual        Int               @map("bateria_atual")
   defeitos            Json?
-  pecasTrocadas       Boolean   @default(false) @map("pecas_trocadas")
-  quaisPecas          String?   @map("quais_pecas")
-  modeloDesejado      String    @map("modelo_desejado")
-  produtoDesejadoNome String?   @map("produto_desejado_nome")
-  ondeOuviu           String?   @map("onde_ouviu")
-  tempoPensando       String?   @map("tempo_pensando")
-  urgenciaTroca       String?   @map("urgencia_troca")
-  valorBase           Float?    @map("valor_base")
-  depreciacaoBateria  Float?    @map("depreciacao_bateria")
-  depreciacaoDefeitos Float?    @map("depreciacao_defeitos")
-  valorAparelho       Float?    @map("valor_aparelho")
-  precoProduto        Float?    @map("preco_produto")
-  valorFinal          Float?    @map("valor_final")
-  valorComDesconto    Float?    @map("valor_com_desconto")
-  descontoPercentual  Float?    @default(3) @map("desconto_percentual")
-  valorManualUsado    Boolean   @default(false) @map("valor_manual_usado")
-  cupomDesconto       String?   @map("cupom_desconto")
-  offerExpiresAt      DateTime? @map("offer_expires_at")
-  temDefeito          Boolean   @default(false) @map("tem_defeito")
-  precisaCotacao      Boolean   @default(false) @map("precisa_cotacao")
+  pecasTrocadas       Boolean           @default(false) @map("pecas_trocadas")
+  quaisPecas          String?           @map("quais_pecas")
+  modeloDesejado      String            @map("modelo_desejado")
+  produtoDesejadoNome String?           @map("produto_desejado_nome")
+  ondeOuviu           String?           @map("onde_ouviu")
+  tempoPensando       String?           @map("tempo_pensando")
+  urgenciaTroca       String?           @map("urgencia_troca")
+  valorBase           Float?            @map("valor_base")
+  depreciacaoBateria  Float?            @map("depreciacao_bateria")
+  depreciacaoDefeitos Float?            @map("depreciacao_defeitos")
+  valorAparelho       Float?            @map("valor_aparelho")
+  precoProduto        Float?            @map("preco_produto")
+  valorFinal          Float?            @map("valor_final")
+  valorComDesconto    Float?            @map("valor_com_desconto")
+  descontoPercentual  Float?            @default(3) @map("desconto_percentual")
+  valorManualUsado    Boolean           @default(false) @map("valor_manual_usado")
+  cupomDesconto       String?           @map("cupom_desconto")
+  offerExpiresAt      DateTime?         @map("offer_expires_at")
+  temDefeito          Boolean           @default(false) @map("tem_defeito")
+  precisaCotacao      Boolean           @default(false) @map("precisa_cotacao")
   nome                String?
   email               String?
   whatsapp            String?
-  etapaAtual          Int       @default(1) @map("etapa_atual")
-  concluido           Boolean   @default(false)
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  cep                 String?
+  mensagemFollowUp    String?           @map("mensagem_follow_up")
+  crmStatus           CrmDeliveryStatus @default(NOT_SENT) @map("crm_status")
+  crmAttempts         Int               @default(0) @map("crm_attempts")
+  crmLastAttemptAt    DateTime?         @map("crm_last_attempt_at")
+  crmSentAt           DateTime?         @map("crm_sent_at")
+  crmLastError        String?           @map("crm_last_error")
+  crmExternalId       String?           @map("crm_external_id")
+  crmExternalUrl      String?           @map("crm_external_url")
+  etapaAtual          Int               @default(1) @map("etapa_atual")
+  concluido           Boolean           @default(false)
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
 
+  @@index([crmStatus])
+  @@index([createdAt])
   @@map("questionario_troca")
 }
