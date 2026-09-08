@@ -1,12 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
-  IsString,
-  IsNumber,
   IsArray,
-  IsOptional,
   IsBoolean,
-  Min,
+  IsNumber,
+  IsOptional,
+  IsString,
   Max,
+  Min,
 } from "class-validator";
 
 export class CalculateTradeDto {
@@ -43,9 +43,8 @@ export class CalculateTradeDto {
   bateriaAtual: number;
 
   @ApiPropertyOptional({
-    description:
-      "Valor manual do aparelho atual (sobrescreve tabela de valores)",
-    example: 3500.0,
+    description: "Valor manual do aparelho atual; sobrescreve a tabela",
+    example: 3500,
     minimum: 0,
   })
   @IsOptional()
@@ -64,7 +63,7 @@ export class CalculateTradeDto {
   defeitos?: string[];
 
   @ApiPropertyOptional({
-    description: "Se já trocou alguma peça",
+    description: "Indica se alguma peça já foi trocada",
     example: false,
   })
   @IsOptional()
@@ -72,7 +71,7 @@ export class CalculateTradeDto {
   pecasTrocadas?: boolean;
 
   @ApiPropertyOptional({
-    description: "Quais peças foram trocadas",
+    description: "Peças que foram trocadas",
     example: "Tela e bateria",
   })
   @IsOptional()
@@ -80,8 +79,8 @@ export class CalculateTradeDto {
   quaisPecas?: string;
 
   @ApiProperty({
-    description: "Modelo do iPhone desejado",
-    example: "iPhone 15 Pro Max",
+    description: "ID da variante ou nome do produto desejado",
+    example: "cmf7variantid",
   })
   @IsString()
   modeloDesejado: string;
@@ -111,49 +110,69 @@ export class CalculateTradeDto {
   urgenciaTroca?: string;
 }
 
+export class DesiredTradeProductDto {
+  @ApiProperty({ example: "iPhone 16 Pro Max 256GB Titânio Natural" })
+  modelo: string;
+
+  @ApiProperty({ example: "R$ 7.666,67" })
+  pixPrice: string;
+
+  @ApiProperty({ example: "R$ 738,51" })
+  installmentPrice: string;
+
+  @ApiProperty({ example: "R$ 8.214,29" })
+  originalPrice: string;
+}
+
 export class TradeResultDto {
+  @ApiProperty({ description: "Identificador da simulação" })
+  questionarioId: string;
+
+  @ApiProperty({
+    description: "Expiração da oferta de 3% em formato ISO 8601",
+    example: "2026-09-08T20:30:00.000Z",
+  })
+  offerExpiresAt: string;
+
+  @ApiProperty({ description: "Percentual de desconto temporário", example: 3 })
+  descontoPercentual: number;
+
   @ApiProperty({ description: "Valor base do aparelho", example: 2800 })
-  @IsNumber()
   valorBase: number;
 
-  @ApiProperty({ description: "Depreciação por bateria", example: 1000 })
-  @IsNumber()
+  @ApiProperty({ description: "Depreciação por bateria", example: 448 })
   depreciacaoBateria: number;
 
   @ApiProperty({ description: "Depreciação por defeitos", example: 350 })
-  @IsNumber()
   depreciacaoDefeitos: number;
 
-  @ApiProperty({ description: "Valor final do aparelho", example: 1450 })
-  @IsNumber()
+  @ApiProperty({ description: "Valor final do aparelho", example: 2002 })
   valorAparelho: number;
 
-  @ApiProperty({ description: "Preço do produto desejado", example: 7666.67 })
-  @IsNumber()
-  precoProduto: string | number;
+  @ApiProperty({ description: "Preço PIX do produto desejado", example: 7666.67 })
+  precoProduto: number;
 
-  @ApiProperty({ description: "Valor a pagar", example: 6216.67 })
-  @IsNumber()
+  @ApiProperty({ description: "Diferença sem desconto", example: 5664.67 })
   valorFinal: number;
 
-  @ApiProperty({ description: "Valor com desconto", example: 6030.17 })
-  @IsNumber()
+  @ApiProperty({ description: "Diferença com desconto temporário", example: 5494.73 })
   valorComDesconto: number;
 
-  @ApiProperty({ description: "Produto desejado" })
-  produtoDesejado: any;
+  @ApiProperty({ description: "Indica uso de valor manual", example: false })
+  valorManualUsado: boolean;
 
-  @ApiProperty({ description: "Tem defeito", example: true })
-  @IsBoolean()
+  @ApiProperty({ type: DesiredTradeProductDto })
+  produtoDesejado: DesiredTradeProductDto;
+
+  @ApiProperty({ description: "Indica defeito informado", example: true })
   temDefeito: boolean;
 
-  @ApiProperty({ description: "Precisa cotação", example: false })
-  @IsBoolean()
+  @ApiProperty({ description: "Indica necessidade de cotação manual", example: false })
   precisaCotacao: boolean;
 
-  @ApiProperty({ description: "Cupom de desconto" })
+  @ApiProperty({ description: "Cupom da oferta temporária" })
   cupomDesconto: string;
 
-  @ApiProperty({ description: "Resumo detalhado" })
+  @ApiProperty({ description: "Resumo textual do cálculo" })
   resumoDetalhado: string;
 }

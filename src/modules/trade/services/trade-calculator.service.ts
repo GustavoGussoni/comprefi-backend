@@ -7,42 +7,38 @@ export class TradeCalculatorService {
   private readonly logger = new Logger(TradeCalculatorService.name);
   constructor(private prisma: PrismaService) {}
 
+  private static readonly OFFER_DURATION_MINUTES = 30;
+  private static readonly DISCOUNT_PERCENT = 3;
+
   async calculateTrade(data: CalculateTradeDto): Promise<TradeResultDto> {
-    // 1. Determinar valor base do aparelho atual
+    const defeitos = this.normalizeDefects(data.defeitos);
+    const temDefeito = defeitos.length > 0;
     let valorBase: number;
     let valorManualUsado = false;
 
     if (data.valorManual !== undefined && data.valorManual !== null) {
-      // Prioridade: valor manual sempre sobrescreve
-      valorBase = data.valorManual;
+      valorBase = this.roundCurrency(data.valorManual);
       valorManualUsado = true;
-      this.logger.log(`💰 Usando valor manual: R$ ${valorBase.toFixed(2)}...`);
+      this.logger.log(`Usando valor manual: R$ ${valorBase.toFixed(2)}`);
     } else {
-      // Buscar na tabela
       const valorTabela = await this.getValorBase(
         data.modeloAtual,
-        data.capacidadeAtual
+        data.capacidadeAtual,
       );
 
-      if (valorTabela) {
-        valorBase = valorTabela.valorBase;
-        this.logger.log(
-          `📊 Usando valor da tabela: R$ ${valorBase.toFixed(2)}...`
-        );
-      } else {
+      if (!valorTabela) {
         throw new Error(
-          `Valor não encontrado para ${data.modeloAtual} ${data.capacidadeAtual}. Forneça um valor manual.`
+          `Valor não encontrado para ${data.modeloAtual} ${data.capacidadeAtual}. Forneça um valor manual.`,
         );
       }
+
+      valorBase = this.roundCurrency(valorTabela.valorBase);
+      this.logger.log(`Usando valor da tabela: R$ ${valorBase.toFixed(2)}`);
     }
 
-    // 2. Calcular depreciação por bateria (proporcional ao valor base)
-    const depreciacaoBateria = this.calculateBatteryDepreciation(
-      data.bateriaAtual,
-      valorBase
+    const depreciacaoBateria = this.roundCurrency(
+      this.calculateBatteryDepreciation(data.bateriaAtual, valorBase),
     );
-
-    // 3. Verificar se tem defeitos que exigem cotação manual
     const defeitosGraves = [
       "tela_quebrada",
       "camera_quebrada",
@@ -51,96 +47,75 @@ export class TradeCalculatorService {
       "outros",
     ];
     const precisaCotacao =
-      data.defeitos?.some((defeito) => defeitosGraves.includes(defeito)) ||
-      data.pecasTrocadas ||
-      false;
-
-    // 4. Calcular depreciação por defeitos leves
-    const depreciacaoDefeitos = this.calculateDefectsDepreciation(
-      data.defeitos || [],
-      data.modeloAtual
+      defeitos.some((defeito) => defeitosGraves.includes(defeito)) ||
+      Boolean(data.pecasTrocadas);
+    const depreciacaoDefeitos = this.roundCurrency(
+      this.calculateDefectsDepreciation(defeitos, data.modeloAtual),
+    );
+    const valorAparelho = this.roundCurrency(
+      Math.max(0, valorBase - depreciacaoBateria - depreciacaoDefeitos),
     );
 
-    // 5. Calcular valor final do aparelho atual
-    const valorAparelho = Math.max(
-      0,
-      valorBase - depreciacaoBateria - depreciacaoDefeitos
-    );
-
-    // 6. Buscar produto desejado
     const produtoDesejado = await this.getProdutoDesejado(data.modeloDesejado);
-
-    // 7. Calcular valor final da troca
-    const precoPixDesejado = this.parsePrice(produtoDesejado.pixPrice);
-    const valorFinal = Math.max(0, precoPixDesejado - valorAparelho);
-
-    // 8. Gerar cupom de desconto
-    const cupomDesconto = this.generateCouponCode();
-    const valorComDesconto = valorFinal * 0.97; // 3% de desconto
-
     const precoProduto = this.parsePrice(produtoDesejado.pixPrice);
-
-    // 9. Salvar questionário no banco
-    await this.saveQuestionario(
-      data,
-      valorAparelho,
-      valorFinal,
-      false,
-      false,
-      valorManualUsado
+    const valorFinal = this.roundCurrency(
+      Math.max(0, precoProduto - valorAparelho),
+    );
+    const descontoPercentual = TradeCalculatorService.DISCOUNT_PERCENT;
+    const valorComDesconto = this.roundCurrency(
+      valorFinal * (1 - descontoPercentual / 100),
+    );
+    const cupomDesconto = this.generateCouponCode();
+    const offerExpiresAt = new Date(
+      Date.now() +
+        TradeCalculatorService.OFFER_DURATION_MINUTES * 60 * 1000,
     );
 
-    // 10. Log detalhado do cálculo
-    const resumoDetalhado = `🧮 Cálculo de troca:
-📱 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
-💰 Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
-🔋 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
-🔧 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
-📊 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
-🎯 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
-💳 Valor a pagar: R$ ${valorFinal.toFixed(2)}
-🎁 Com desconto: R$ ${valorComDesconto.toFixed(2)}`;
-    this.logger.log(resumoDetalhado);
+    const resumoDetalhado = `Cálculo de troca:
+Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
+Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
+Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
+Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
+Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
+Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
+Valor a pagar: R$ ${valorFinal.toFixed(2)}
+Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
 
-    if (precisaCotacao) {
-      return {
-        // Dados do aparelho atual
-        valorBase: valorBase,
-        depreciacaoBateria: depreciacaoBateria,
-        depreciacaoDefeitos: depreciacaoDefeitos,
-        valorAparelho: valorAparelho,
-
-        // Dados do produto desejado
-        produtoDesejado: produtoDesejado,
-        precoProduto: Number(precoProduto),
-
-        // Cálculo final
-        valorFinal: Number(valorFinal.toFixed(2)),
-        valorComDesconto: valorComDesconto,
-
-        // Flags
-        temDefeito: data.defeitos.length > 0,
-        precisaCotacao: false,
-
-        cupomDesconto: cupomDesconto,
-        resumoDetalhado: resumoDetalhado,
-      };
-    }
-
-    return {
-      valorAparelho,
-      valorFinal,
+    const questionario = await this.saveQuestionario(data, defeitos, {
       valorBase,
       depreciacaoBateria,
       depreciacaoDefeitos,
-
-      precoProduto: Number(precoProduto),
-      temDefeito: (data.defeitos?.length || 0) > 0,
-      precisaCotacao: false,
-
-      produtoDesejado,
-      cupomDesconto,
+      valorAparelho,
+      precoProduto,
+      valorFinal,
       valorComDesconto,
+      descontoPercentual,
+      valorManualUsado,
+      cupomDesconto,
+      offerExpiresAt,
+      temDefeito,
+      precisaCotacao,
+      produtoDesejadoNome: produtoDesejado.modelo,
+    });
+
+    this.logger.log(resumoDetalhado);
+
+    return {
+      questionarioId: questionario.id,
+      offerExpiresAt: offerExpiresAt.toISOString(),
+      descontoPercentual,
+      valorBase,
+      depreciacaoBateria,
+      depreciacaoDefeitos,
+      valorAparelho,
+      precoProduto,
+      valorFinal,
+      valorComDesconto,
+      valorManualUsado,
+      produtoDesejado,
+      temDefeito,
+      precisaCotacao,
+      cupomDesconto,
       resumoDetalhado,
     };
   }
@@ -281,49 +256,90 @@ export class TradeCalculatorService {
   }
 
   private parsePrice(priceString: string): number {
-    // Converter "R$ 5.111,11" para 5111.11
-    return parseFloat(
+    const value = Number(
       priceString
         .replace("R$", "")
         .replace(/\s/g, "")
         .replace(/\./g, "")
-        .replace(",", ".")
+        .replace(",", "."),
     );
+
+    if (!Number.isFinite(value)) {
+      throw new Error(`Preço inválido no catálogo: ${priceString}`);
+    }
+
+    return this.roundCurrency(value);
+  }
+
+  private normalizeDefects(defeitos?: string[]): string[] {
+    return Array.from(
+      new Set(
+        (defeitos ?? [])
+          .map((defeito) => defeito.trim())
+          .filter((defeito) => defeito.length > 0 && defeito !== "nenhum"),
+      ),
+    );
+  }
+
+  private roundCurrency(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
   }
 
   private generateCouponCode(): string {
     const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-    return `TROCA2H-${random}${timestamp.slice(-3)}`;
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TROCA30M-${random}${timestamp.slice(-3).toUpperCase()}`;
   }
 
   private async saveQuestionario(
     data: CalculateTradeDto,
-    valorAparelho: number,
-    valorFinal: number,
-    temDefeito: boolean,
-    precisaCotacao: boolean,
-    valorManualUsado: boolean
+    defeitos: string[],
+    result: {
+      valorBase: number;
+      depreciacaoBateria: number;
+      depreciacaoDefeitos: number;
+      valorAparelho: number;
+      precoProduto: number;
+      valorFinal: number;
+      valorComDesconto: number;
+      descontoPercentual: number;
+      valorManualUsado: boolean;
+      cupomDesconto: string;
+      offerExpiresAt: Date;
+      temDefeito: boolean;
+      precisaCotacao: boolean;
+      produtoDesejadoNome: string;
+    },
   ) {
-    return await this.prisma.questionarioTroca.create({
+    return this.prisma.questionarioTroca.create({
       data: {
         modeloAtual: data.modeloAtual,
         capacidadeAtual: data.capacidadeAtual,
         corAtual: data.corAtual,
         bateriaAtual: data.bateriaAtual,
-        defeitos: data.defeitos || [],
-        pecasTrocadas: data.pecasTrocadas || false,
+        defeitos,
+        pecasTrocadas: Boolean(data.pecasTrocadas),
         quaisPecas: data.quaisPecas,
         modeloDesejado: data.modeloDesejado,
+        produtoDesejadoNome: result.produtoDesejadoNome,
         ondeOuviu: data.ondeOuviu,
         tempoPensando: data.tempoPensando,
         urgenciaTroca: data.urgenciaTroca,
-        valorAparelho,
-        valorFinal,
-        temDefeito,
-        precisaCotacao,
-        etapaAtual: 10, // Questionário completo
-        concluido: false, // Ainda não preencheu contato
+        valorBase: result.valorBase,
+        depreciacaoBateria: result.depreciacaoBateria,
+        depreciacaoDefeitos: result.depreciacaoDefeitos,
+        valorAparelho: result.valorAparelho,
+        precoProduto: result.precoProduto,
+        valorFinal: result.valorFinal,
+        valorComDesconto: result.valorComDesconto,
+        descontoPercentual: result.descontoPercentual,
+        valorManualUsado: result.valorManualUsado,
+        cupomDesconto: result.cupomDesconto,
+        offerExpiresAt: result.offerExpiresAt,
+        temDefeito: result.temDefeito,
+        precisaCotacao: result.precisaCotacao,
+        etapaAtual: 10,
+        concluido: false,
       },
     });
   }
