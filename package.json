@@ -25,6 +25,7 @@
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node prisma/seed.ts",
     "prisma:seed-admin": "ts-node prisma/seed-admin-users.ts",
+    "prisma:seed-staging": "ts-node prisma/seed-staging.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
