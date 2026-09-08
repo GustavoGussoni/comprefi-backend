@@ -4,6 +4,8 @@ const REQUIRED_ALWAYS = ["DATABASE_URL", "SECRET_KEY"] as const;
 const REQUIRED_IN_PRODUCTION = [
   "FRONTEND_URL",
   "DATACRAZY_TRADE_WEBHOOK_URL",
+  "DATACRAZY_QUIZ_WEBHOOK_URL",
+  "DATACRAZY_ECONOMY_WEBHOOK_URL",
 ] as const;
 
 function requireNonEmptyString(
@@ -51,6 +53,16 @@ export function validateEnvironment(config: Environment): Environment {
   validateUrl(
     env.DATACRAZY_TRADE_WEBHOOK_URL as string | undefined,
     "DATACRAZY_TRADE_WEBHOOK_URL",
+    errors,
+  );
+  validateUrl(
+    env.DATACRAZY_QUIZ_WEBHOOK_URL as string | undefined,
+    "DATACRAZY_QUIZ_WEBHOOK_URL",
+    errors,
+  );
+  validateUrl(
+    env.DATACRAZY_ECONOMY_WEBHOOK_URL as string | undefined,
+    "DATACRAZY_ECONOMY_WEBHOOK_URL",
     errors,
   );
 

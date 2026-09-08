@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  DataCrazyCaptureKind,
+  DataCrazyCapturePayload,
   DataCrazyDeliveryReceipt,
   DataCrazyTradePayload,
 } from './datacrazy.types';
@@ -24,9 +26,31 @@ export class DataCrazyService {
   async sendTrade(
     payload: DataCrazyTradePayload,
   ): Promise<DataCrazyDeliveryReceipt> {
-    const webhookUrl = this.configService.getOrThrow<string>(
+    return this.sendWebhook(
       'DATACRAZY_TRADE_WEBHOOK_URL',
+      payload,
+      `simulação ${payload.questionarioId}`,
     );
+  }
+
+  async sendCapture(
+    kind: DataCrazyCaptureKind,
+    payload: DataCrazyCapturePayload,
+  ): Promise<DataCrazyDeliveryReceipt> {
+    const webhookKey =
+      kind === 'quiz'
+        ? 'DATACRAZY_QUIZ_WEBHOOK_URL'
+        : 'DATACRAZY_ECONOMY_WEBHOOK_URL';
+
+    return this.sendWebhook(webhookKey, payload, `captura ${kind}`);
+  }
+
+  private async sendWebhook(
+    webhookKey: string,
+    payload: unknown,
+    logContext: string,
+  ): Promise<DataCrazyDeliveryReceipt> {
+    const webhookUrl = this.configService.getOrThrow<string>(webhookKey);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
 
@@ -51,7 +75,7 @@ export class DataCrazyService {
         );
       }
 
-      this.logger.log(`Simulação ${payload.questionarioId} enviada ao DataCrazy`);
+      this.logger.log(`${logContext} enviada ao DataCrazy`);
       return this.extractReceipt(body);
     } catch (error: unknown) {
       if (error instanceof DataCrazyDeliveryError) {
