@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../database/prisma.service';
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { UpdateUserDto } from '../../dto/update-user.dto';
@@ -7,7 +8,7 @@ import { UsersRepository } from '../users.repository';
 
 @Injectable()
 export class UsersPrismaRepository implements UsersRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserDto): Promise<User> {
     const user = new User();
@@ -19,6 +20,7 @@ export class UsersPrismaRepository implements UsersRepository {
         name: user.name,
         email: user.email,
         password: user.password,
+        role: user.role,
       },
     });
 
@@ -26,16 +28,12 @@ export class UsersPrismaRepository implements UsersRepository {
   }
 
   async findOne(id: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ 
-      where: { id } 
-    });
+    const user = await this.prisma.user.findUnique({ where: { id } });
     return user as User | null;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ 
-      where: { email } 
-    });
+    const user = await this.prisma.user.findUnique({ where: { email } });
     return user as User | null;
   }
 
@@ -45,6 +43,7 @@ export class UsersPrismaRepository implements UsersRepository {
         id: true,
         name: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -57,14 +56,12 @@ export class UsersPrismaRepository implements UsersRepository {
   }
 
   async update(data: UpdateUserDto, userId: string): Promise<User> {
-    const updateData: any = { ...data };
-    
-    // Remove campos undefined
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
-      }
-    });
+    const updateData: Prisma.UserUpdateInput = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.password !== undefined) updateData.password = data.password;
+    if (data.role !== undefined) updateData.role = data.role;
 
     const user = await this.prisma.user.update({
       where: { id: userId },
@@ -78,4 +75,3 @@ export class UsersPrismaRepository implements UsersRepository {
     await this.prisma.user.delete({ where: { id } });
   }
 }
-
