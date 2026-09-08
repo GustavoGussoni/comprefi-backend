@@ -17,7 +17,7 @@ export class AppController {
   @Get('health')
   @ApiOperation({ summary: 'Verificação de saúde da API' })
   @ApiResponse({ status: 200, description: 'Status da API e dependências' })
-  getHealth(): object {
+  async getHealth(): Promise<object> {
     return this.appService.getHealth();
   }
 }
