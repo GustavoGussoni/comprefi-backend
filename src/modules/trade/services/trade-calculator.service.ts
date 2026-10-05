@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
 import { PrismaService } from "../../../database/prisma.service";
 import { CalculateTradeDto, TradeResultDto } from "../dto/calculate-trade.dto";
 
@@ -27,9 +27,11 @@ export class TradeCalculatorService {
       );
 
       if (!valorTabela) {
-        throw new Error(
-          `Valor não encontrado para ${data.modeloAtual} ${data.capacidadeAtual}. Forneça um valor manual.`,
-        );
+        throw new UnprocessableEntityException({
+          statusCode: 422,
+          code: "TRADE_VALUE_NOT_FOUND",
+          message: `Ainda não há valor de troca cadastrado para ${data.modeloAtual} ${data.capacidadeAtual}. Revise o modelo e a capacidade informados ou fale com nossa equipe.`,
+        });
       }
 
       valorBase = this.roundCurrency(valorTabela.valorBase);

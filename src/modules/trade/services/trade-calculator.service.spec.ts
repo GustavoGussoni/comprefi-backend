@@ -109,4 +109,31 @@ describe('TradeCalculatorService', () => {
       }),
     });
   });
+
+  it('retorna 422 com orientação útil sem criar simulação quando falta valor ativo', async () => {
+    prismaMock.valorTroca.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.calculateTrade({
+        modeloAtual: 'iPhone 15',
+        capacidadeAtual: '512GB',
+        corAtual: 'Preto',
+        bateriaAtual: 85,
+        defeitos: ['nenhum'],
+        pecasTrocadas: false,
+        modeloDesejado: 'variant-1',
+      }),
+    ).rejects.toMatchObject({
+      status: 422,
+      response: {
+        statusCode: 422,
+        code: 'TRADE_VALUE_NOT_FOUND',
+        message: expect.stringContaining('iPhone 15 512GB'),
+      },
+    });
+    expect(prismaMock.valorTroca.findFirst).toHaveBeenCalledWith({
+      where: { modelo: 'iPhone 15', capacidade: '512GB', ativo: true },
+    });
+    expect(prismaMock.questionarioTroca.create).not.toHaveBeenCalled();
+  });
 });
