@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CrmDeliveryStatus, QuestionarioTroca } from '@prisma/client';
+import { CrmDeliveryStatus, Prisma, QuestionarioTroca } from '@prisma/client';
 import {
   DataCrazyDeliveryError,
   DataCrazyService,
@@ -28,40 +28,108 @@ export class TradeLeadService {
     questionarioId: string,
     contact: SubmitTradeContactDto,
   ): Promise<TradeContactSubmissionResult> {
-    const existing = await this.prisma.questionarioTroca.findUnique({
-      where: { id: questionarioId },
-    });
+    // A identidade só é conhecida no envio do contato. Uma nova simulação pode
+    // ter outro prazo, mas não pode renovar a primeira oferta do mesmo contato.
+    // Serializable evita que dois envios simultâneos aceitem ambos um prazo novo.
+    let saved:
+      | { questionario: QuestionarioTroca; alreadySent: boolean }
+      | undefined;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        saved = await this.prisma.$transaction(
+          async (tx) => {
+            const existing = await tx.questionarioTroca.findUnique({
+              where: { id: questionarioId },
+            });
+            if (!existing) {
+              throw new NotFoundException('Simulação não encontrada');
+            }
 
-    if (!existing) {
-      throw new NotFoundException('Simulação não encontrada');
+            const sameContact =
+              existing.nome === contact.nome &&
+              existing.email === contact.email &&
+              existing.whatsapp === contact.whatsapp &&
+              existing.cep === contact.cep;
+            const digits = contact.whatsapp.replace(/\D/g, '');
+            const local = digits.slice(2);
+            const phones = Array.from(
+              new Set([
+                contact.whatsapp,
+                digits,
+                `(${digits.slice(0, 2)}) ${local.slice(0, -4)}-${local.slice(-4)}`,
+                `${digits.slice(0, 2)} ${local.slice(0, -4)}-${local.slice(-4)}`,
+              ]),
+            );
+            const prior = await tx.questionarioTroca.findFirst({
+              where: {
+                id: { not: questionarioId },
+                OR: [
+                  {
+                    email: {
+                      equals: contact.email.trim(),
+                      mode: 'insensitive',
+                    },
+                  },
+                  { whatsapp: { in: phones } },
+                ],
+              },
+              orderBy: { createdAt: 'asc' },
+              select: { offerExpiresAt: true },
+            });
+            const offerExpiresAt = prior
+              ? !existing.offerExpiresAt || !prior.offerExpiresAt
+                ? null
+                : existing.offerExpiresAt < prior.offerExpiresAt
+                  ? existing.offerExpiresAt
+                  : prior.offerExpiresAt
+              : existing.offerExpiresAt;
+
+            if (existing.crmStatus === CrmDeliveryStatus.SENT && sameContact) {
+              const persisted =
+                offerExpiresAt?.getTime() === existing.offerExpiresAt?.getTime()
+                  ? existing
+                  : await tx.questionarioTroca.update({
+                      where: { id: questionarioId },
+                      data: { offerExpiresAt },
+                    });
+              return { questionario: persisted, alreadySent: true };
+            }
+
+            const questionario = await tx.questionarioTroca.update({
+              where: { id: questionarioId },
+              data: {
+                nome: contact.nome,
+                email: contact.email,
+                whatsapp: contact.whatsapp,
+                cep: contact.cep,
+                offerExpiresAt,
+                concluido: true,
+                crmStatus: CrmDeliveryStatus.PENDING,
+                crmAttempts: { increment: 1 },
+                crmLastAttemptAt: new Date(),
+                crmLastError: null,
+              },
+            });
+            return { questionario, alreadySent: false };
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        );
+        break;
+      } catch (error) {
+        if (
+          !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+          error.code !== 'P2034' ||
+          attempt === 2
+        ) {
+          throw error;
+        }
+      }
     }
 
-    const sameContact =
-      existing.nome === contact.nome &&
-      existing.email === contact.email &&
-      existing.whatsapp === contact.whatsapp &&
-      existing.cep === contact.cep;
-
-    if (existing.crmStatus === CrmDeliveryStatus.SENT && sameContact) {
-      return this.toSubmissionResult(existing, true);
-    }
-
-    const questionario = await this.prisma.questionarioTroca.update({
-      where: { id: questionarioId },
-      data: {
-        nome: contact.nome,
-        email: contact.email,
-        whatsapp: contact.whatsapp,
-        cep: contact.cep,
-        concluido: true,
-        crmStatus: CrmDeliveryStatus.PENDING,
-        crmAttempts: { increment: 1 },
-        crmLastAttemptAt: new Date(),
-        crmLastError: null,
-      },
-    });
-
-    return this.deliver(questionario, contact.fonte);
+    if (!saved) throw new Error('Não foi possível salvar a simulação');
+    if (saved.alreadySent)
+      return this.toSubmissionResult(saved.questionario, true);
+    return this.deliver(saved.questionario, contact.fonte);
   }
 
   async resend(questionarioId: string): Promise<TradeContactSubmissionResult> {
@@ -73,7 +141,12 @@ export class TradeLeadService {
       throw new NotFoundException('Simulação não encontrada');
     }
 
-    if (!existing.nome || !existing.email || !existing.whatsapp || !existing.cep) {
+    if (
+      !existing.nome ||
+      !existing.email ||
+      !existing.whatsapp ||
+      !existing.cep
+    ) {
       throw new Error('A simulação ainda não possui contato completo');
     }
 

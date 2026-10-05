@@ -58,8 +58,10 @@ function makeQuestionario(
 
 describe('TradeLeadService', () => {
   const prismaMock = {
+    $transaction: jest.fn(),
     questionarioTroca: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
     },
   };
@@ -79,6 +81,11 @@ describe('TradeLeadService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers().setSystemTime(new Date('2026-09-08T20:10:00.000Z'));
+    prismaMock.$transaction.mockImplementation(
+      async (callback: (tx: typeof prismaMock) => Promise<unknown>) =>
+        callback(prismaMock),
+    );
+    prismaMock.questionarioTroca.findFirst.mockResolvedValue(null);
     service = new TradeLeadService(
       prismaMock as unknown as PrismaService,
       dataCrazyMock as unknown as DataCrazyService,
@@ -136,6 +143,7 @@ describe('TradeLeadService', () => {
       leadSaved: true,
       crmSent: true,
       crmStatus: CrmDeliveryStatus.SENT,
+      offerExpiresAt: '2026-09-08T20:30:00.000Z',
     });
   });
 
@@ -192,5 +200,133 @@ describe('TradeLeadService', () => {
     expect(payload.valorAPagar).toBe(2751);
     expect(payload.valorTotal).toBe(7119);
     expect(payload.mensagemFollowUp).toContain('valor original aplicado');
+  });
+
+  it('mantém a primeira expiração quando o mesmo e-mail recebe outra simulação', async () => {
+    const newOffer = new Date('2026-09-08T20:40:00.000Z');
+    const firstOffer = new Date('2026-09-08T20:30:00.000Z');
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(
+      makeQuestionario({ id: 'questionario-2', offerExpiresAt: newOffer }),
+    );
+    prismaMock.questionarioTroca.findFirst.mockResolvedValue({
+      offerExpiresAt: firstOffer,
+    });
+    prismaMock.questionarioTroca.update
+      .mockImplementationOnce(
+        async ({ data }: { data: { offerExpiresAt: Date } }) =>
+          makeQuestionario({
+            ...contact,
+            id: 'questionario-2',
+            offerExpiresAt: data.offerExpiresAt,
+            crmStatus: CrmDeliveryStatus.PENDING,
+          }),
+      )
+      .mockImplementationOnce(async () =>
+        makeQuestionario({
+          ...contact,
+          id: 'questionario-2',
+          offerExpiresAt: firstOffer,
+          crmStatus: CrmDeliveryStatus.SENT,
+        }),
+      );
+    dataCrazyMock.sendTrade.mockResolvedValue({});
+
+    const result = await service.submitContact('questionario-2', contact);
+
+    expect(prismaMock.questionarioTroca.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: { not: 'questionario-2' },
+        OR: expect.arrayContaining([
+          { email: { equals: contact.email, mode: 'insensitive' } },
+        ]),
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { offerExpiresAt: true },
+    });
+    expect(prismaMock.questionarioTroca.update).toHaveBeenCalledWith({
+      where: { id: 'questionario-2' },
+      data: expect.objectContaining({ offerExpiresAt: firstOffer }),
+    });
+    expect(result.offerExpiresAt).toBe(firstOffer.toISOString());
+    expect(dataCrazyMock.sendTrade).toHaveBeenCalledWith(
+      expect.objectContaining({ ofertaExpirada: false, valorAPagar: 2668.47 }),
+    );
+  });
+
+  it('não reenvia contato já entregue e corrige seu prazo se havia oferta anterior', async () => {
+    const firstOffer = new Date('2026-09-08T20:30:00.000Z');
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(
+      makeQuestionario({
+        ...contact,
+        offerExpiresAt: new Date('2026-09-08T20:40:00.000Z'),
+        crmStatus: CrmDeliveryStatus.SENT,
+      }),
+    );
+    prismaMock.questionarioTroca.findFirst.mockResolvedValue({
+      offerExpiresAt: firstOffer,
+    });
+    prismaMock.questionarioTroca.update.mockResolvedValue(
+      makeQuestionario({
+        ...contact,
+        offerExpiresAt: firstOffer,
+        crmStatus: CrmDeliveryStatus.SENT,
+      }),
+    );
+
+    const result = await service.submitContact('questionario-1', contact);
+
+    expect(result.offerExpiresAt).toBe(firstOffer.toISOString());
+    expect(prismaMock.questionarioTroca.update).toHaveBeenCalledWith({
+      where: { id: 'questionario-1' },
+      data: { offerExpiresAt: firstOffer },
+    });
+    expect(dataCrazyMock.sendTrade).not.toHaveBeenCalled();
+  });
+
+  it('aplica o valor original em nova simulação do mesmo WhatsApp após 30 minutos', async () => {
+    jest.setSystemTime(new Date('2026-09-08T20:35:00.000Z'));
+    const firstOffer = new Date('2026-09-08T20:30:00.000Z');
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(
+      makeQuestionario({
+        id: 'questionario-2',
+        offerExpiresAt: new Date('2026-09-08T21:05:00.000Z'),
+      }),
+    );
+    prismaMock.questionarioTroca.findFirst.mockResolvedValue({
+      offerExpiresAt: firstOffer,
+    });
+    prismaMock.questionarioTroca.update
+      .mockImplementationOnce(async () =>
+        makeQuestionario({
+          ...contact,
+          id: 'questionario-2',
+          offerExpiresAt: firstOffer,
+          crmStatus: CrmDeliveryStatus.PENDING,
+        }),
+      )
+      .mockImplementationOnce(async () =>
+        makeQuestionario({
+          ...contact,
+          id: 'questionario-2',
+          offerExpiresAt: firstOffer,
+          crmStatus: CrmDeliveryStatus.FAILED,
+        }),
+      );
+    dataCrazyMock.sendTrade.mockRejectedValue(new Error('staging sem webhook'));
+
+    const result = await service.submitContact('questionario-2', {
+      ...contact,
+      email: 'novo@exemplo.com',
+    });
+
+    expect(result).toMatchObject({
+      leadSaved: true,
+      crmSent: false,
+      ofertaExpirada: true,
+      offerExpiresAt: firstOffer.toISOString(),
+    });
+    expect(dataCrazyMock.sendTrade).toHaveBeenCalledWith(
+      expect.objectContaining({ ofertaExpirada: true, valorAPagar: 2751 }),
+    );
   });
 });
