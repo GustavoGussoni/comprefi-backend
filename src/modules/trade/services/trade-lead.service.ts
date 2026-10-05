@@ -19,6 +19,12 @@ export interface TradeContactSubmissionResult {
 
 @Injectable()
 export class TradeLeadService {
+  // Marco exclusivo de staging: simulações anteriores foram criadas em testes.
+  // Não aplicar este corte em produção sem uma decisão comercial separada.
+  private static readonly STAGING_OFFER_START_AT = new Date(
+    '2026-10-05T17:54:08.000Z',
+  );
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly dataCrazyService: DataCrazyService,
@@ -63,6 +69,16 @@ export class TradeLeadService {
             const prior = await tx.questionarioTroca.findFirst({
               where: {
                 id: { not: questionarioId },
+                ...(process.env.NODE_ENV === 'staging'
+                  ? {
+                      createdAt: {
+                        gte: TradeLeadService.STAGING_OFFER_START_AT,
+                      },
+                      offerExpiresAt: {
+                        gte: TradeLeadService.STAGING_OFFER_START_AT,
+                      },
+                    }
+                  : {}),
                 OR: [
                   {
                     email: {

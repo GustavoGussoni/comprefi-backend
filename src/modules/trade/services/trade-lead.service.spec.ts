@@ -57,6 +57,7 @@ function makeQuestionario(
 }
 
 describe('TradeLeadService', () => {
+  const originalNodeEnv = process.env.NODE_ENV;
   const prismaMock = {
     $transaction: jest.fn(),
     questionarioTroca: {
@@ -94,6 +95,7 @@ describe('TradeLeadService', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    process.env.NODE_ENV = originalNodeEnv;
   });
 
   it('salva o contato antes do envio e registra sucesso do DataCrazy', async () => {
@@ -200,6 +202,121 @@ describe('TradeLeadService', () => {
     expect(payload.valorAPagar).toBe(2751);
     expect(payload.valorTotal).toBe(7119);
     expect(payload.mensagemFollowUp).toContain('valor original aplicado');
+  });
+
+  it('ignora simulações anteriores ao marco comercial de staging', async () => {
+    process.env.NODE_ENV = 'staging';
+    jest.setSystemTime(new Date('2026-10-06T18:00:00.000Z'));
+    const newOffer = new Date('2026-10-06T18:30:00.000Z');
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(
+      makeQuestionario({
+        id: 'nova-simulacao',
+        createdAt: new Date('2026-10-06T18:00:00.000Z'),
+        offerExpiresAt: newOffer,
+      }),
+    );
+    // Histórico antigo, ou prazo antigo copiado para um teste novo, é ignorado.
+    prismaMock.questionarioTroca.findFirst.mockImplementation(
+      async ({
+        where,
+      }: {
+        where: { createdAt: { gte: Date }; offerExpiresAt: { gte: Date } };
+      }) => {
+        expect(where.createdAt.gte).toEqual(
+          new Date('2026-10-05T17:54:08.000Z'),
+        );
+        expect(where.offerExpiresAt.gte).toEqual(
+          new Date('2026-10-05T17:54:08.000Z'),
+        );
+        return null;
+      },
+    );
+    prismaMock.questionarioTroca.update
+      .mockResolvedValueOnce(
+        makeQuestionario({
+          ...contact,
+          id: 'nova-simulacao',
+          offerExpiresAt: newOffer,
+          crmStatus: CrmDeliveryStatus.PENDING,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeQuestionario({
+          ...contact,
+          id: 'nova-simulacao',
+          offerExpiresAt: newOffer,
+          crmStatus: CrmDeliveryStatus.FAILED,
+        }),
+      );
+    dataCrazyMock.sendTrade.mockRejectedValue(
+      new Error('sem webhook em staging'),
+    );
+
+    const result = await service.submitContact('nova-simulacao', contact);
+
+    expect(result.offerExpiresAt).toBe(newOffer.toISOString());
+    expect(result.ofertaExpirada).toBe(false);
+    expect(prismaMock.questionarioTroca.update).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({ offerExpiresAt: newOffer }),
+      }),
+    );
+  });
+
+  it('considera a primeira oferta criada após o marco de staging', async () => {
+    process.env.NODE_ENV = 'staging';
+    jest.setSystemTime(new Date('2026-10-06T18:35:00.000Z'));
+    const firstOffer = new Date('2026-10-06T18:30:00.000Z');
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(
+      makeQuestionario({
+        id: 'segunda-simulacao',
+        offerExpiresAt: new Date('2026-10-06T19:05:00.000Z'),
+      }),
+    );
+    prismaMock.questionarioTroca.findFirst.mockImplementation(
+      async ({
+        where,
+      }: {
+        where: { createdAt: { gte: Date }; offerExpiresAt: { gte: Date } };
+      }) => {
+        expect(where.createdAt.gte).toEqual(
+          new Date('2026-10-05T17:54:08.000Z'),
+        );
+        expect(where.offerExpiresAt.gte).toEqual(
+          new Date('2026-10-05T17:54:08.000Z'),
+        );
+        return { offerExpiresAt: firstOffer };
+      },
+    );
+    prismaMock.questionarioTroca.update
+      .mockResolvedValueOnce(
+        makeQuestionario({
+          ...contact,
+          id: 'segunda-simulacao',
+          offerExpiresAt: firstOffer,
+          crmStatus: CrmDeliveryStatus.PENDING,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeQuestionario({
+          ...contact,
+          id: 'segunda-simulacao',
+          offerExpiresAt: firstOffer,
+          crmStatus: CrmDeliveryStatus.FAILED,
+        }),
+      );
+    dataCrazyMock.sendTrade.mockRejectedValue(
+      new Error('sem webhook em staging'),
+    );
+
+    const result = await service.submitContact('segunda-simulacao', contact);
+
+    expect(result.offerExpiresAt).toBe(firstOffer.toISOString());
+    expect(result.ofertaExpirada).toBe(true);
+    expect(dataCrazyMock.sendTrade).toHaveBeenCalledWith(
+      expect.objectContaining({ ofertaExpirada: true, valorAPagar: 2751 }),
+    );
   });
 
   it('mantém a primeira expiração quando o mesmo e-mail recebe outra simulação', async () => {
