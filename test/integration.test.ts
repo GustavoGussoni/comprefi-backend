@@ -32,7 +32,7 @@ describe("CompreFi API Integration Tests", () => {
   async function setupTestUser() {
     try {
       // Registrar usuário de teste
-      const registerResponse = await request(app.getHttpServer())
+      const _registerResponse = await request(app.getHttpServer())
         .post("/auth/register")
         .send({
           name: "Test User",
@@ -49,7 +49,7 @@ describe("CompreFi API Integration Tests", () => {
         });
 
       authToken = loginResponse.body.access_token;
-    } catch (error) {
+    } catch (_error) {
       console.log("Usuário de teste já existe ou erro na criação");
 
       // Tentar fazer login direto

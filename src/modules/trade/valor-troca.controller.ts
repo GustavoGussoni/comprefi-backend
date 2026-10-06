@@ -10,10 +10,13 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { UserRole } from "@prisma/client";
 import { IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { Roles } from "../auth/roles.decorator";
+import { RolesGuard } from "../auth/roles.guard";
 import { PrismaService } from "../../database/prisma.service";
-import { AdminIdentityGuard } from "../auth/admin-identity.guard";
+
 // DTOs com validação
 class CreateValorTrocaDto {
   @IsString()
@@ -118,7 +121,8 @@ export class ValorTrocaController {
   // POST /trade/valores — Criar novo valor
   // ========================================
   @Post()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Criar novo valor de troca" })
   @ApiResponse({ status: 201, description: "Valor criado com sucesso" })
@@ -138,7 +142,8 @@ export class ValorTrocaController {
   // POST /trade/valores/bulk — Criar/atualizar em lote
   // ========================================
   @Post("bulk")
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Criar ou atualizar valores em lote (upsert)" })
   async bulkUpsert(@Body() data: CreateValorTrocaDto[]) {
@@ -173,7 +178,8 @@ export class ValorTrocaController {
   // PATCH /trade/valores/:id — Atualizar valor
   // ========================================
   @Patch(":id")
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Atualizar valor de troca" })
   @ApiResponse({ status: 200, description: "Valor atualizado com sucesso" })
@@ -188,7 +194,8 @@ export class ValorTrocaController {
   // DELETE /trade/valores/:id — Deletar valor
   // ========================================
   @Delete(":id")
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Deletar valor de troca" })
   @ApiResponse({ status: 200, description: "Valor deletado com sucesso" })

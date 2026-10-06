@@ -1,60 +1,160 @@
-import { PrismaService } from "../../../database/prisma.service";
-import { TradeCalculatorService } from "./trade-calculator.service";
+import { PrismaService } from '../../../database/prisma.service';
+import { TradeCalculatorService } from './trade-calculator.service';
 
-describe("TradeCalculatorService sem override público", () => {
+describe('TradeCalculatorService', () => {
   const prismaMock = {
-    valorTroca: { findFirst: jest.fn() },
-    productVariant: { findUnique: jest.fn() },
-    questionarioTroca: { create: jest.fn() },
+    valorTroca: {
+      findFirst: jest.fn(),
+    },
+    productVariant: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+    },
+    product: {
+      findFirst: jest.fn(),
+    },
+    questionarioTroca: {
+      create: jest.fn(),
+    },
   };
+
   let service: TradeCalculatorService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    prismaMock.valorTroca.findFirst.mockResolvedValue({ valorBase: 2500 });
+    jest.useFakeTimers().setSystemTime(new Date('2026-09-08T20:00:00.000Z'));
+
+    prismaMock.valorTroca.findFirst.mockResolvedValue({ valorBase: 3400 });
     prismaMock.productVariant.findUnique.mockResolvedValue({
-      id: "variant-1",
+      id: 'variant-1',
+      storage: '256GB',
+      color: 'Titânio Natural',
+      pixPrice: 'R$ 7.666,67',
+      installmentPrice: 'R$ 738,51',
+      originalPrice: 'R$ 8.214,29',
       isActive: true,
-      storage: "256GB",
-      color: "Laranja",
-      pixPrice: "R$ 7.332,00",
-      installmentPrice: "R$ 696,68",
-      originalPrice: "R$ 7.936,00",
-      productGroup: { model: "iPhone 17 Pro" },
+      productGroup: {
+        model: 'iPhone 16 Pro Max',
+      },
     });
-    prismaMock.questionarioTroca.create.mockResolvedValue({ id: "synthetic" });
+    prismaMock.questionarioTroca.create.mockResolvedValue({
+      id: 'questionario-1',
+    });
+
     service = new TradeCalculatorService(
       prismaMock as unknown as PrismaService,
     );
   });
 
-  const request = {
-    modeloAtual: "iPhone 15",
-    capacidadeAtual: "128GB",
-    corAtual: "Preto",
-    bateriaAtual: 85,
-    defeitos: ["nenhum"],
-    pecasTrocadas: false,
-    modeloDesejado: "variant-1",
-  };
-
-  it("não usa um valor manual injetado e ainda produz o cálculo normal", async () => {
-    const injectedRequest = { ...request, valorManual: 999999 };
-    const result = await service.calculateTrade(injectedRequest);
-    expect(result.valorBase).toBe(2500);
-    expect(result.valorAparelho).toBe(2100);
-    expect(result.valorFinal).toBe(5232);
-    expect(prismaMock.valorTroca.findFirst).toHaveBeenCalledWith({
-      where: { modelo: "iPhone 15", capacidade: "128GB", ativo: true },
-    });
-    expect(prismaMock.questionarioTroca.create).toHaveBeenCalledTimes(1);
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
-  it("não cria simulação quando não há valor ativo na tabela", async () => {
+  it('normaliza nenhum defeito e cria oferta auditável de 30 minutos', async () => {
+    const result = await service.calculateTrade({
+      modeloAtual: 'iPhone 14 Plus',
+      capacidadeAtual: '128GB',
+      corAtual: 'Preto',
+      bateriaAtual: 85,
+      defeitos: ['nenhum'],
+      pecasTrocadas: false,
+      modeloDesejado: 'variant-1',
+    });
+
+    expect(result).toMatchObject({
+      questionarioId: 'questionario-1',
+      offerExpiresAt: '2026-09-08T20:30:00.000Z',
+      descontoPercentual: 3,
+      valorBase: 3400,
+      depreciacaoBateria: 544,
+      depreciacaoDefeitos: 0,
+      valorAparelho: 2856,
+      precoProduto: 7666.67,
+      valorFinal: 4810.67,
+      valorComDesconto: 4666.35,
+      temDefeito: false,
+      precisaCotacao: false,
+      valorManualUsado: false,
+    });
+    expect(result.cupomDesconto).toMatch(/^TROCA30M-/);
+    expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        defeitos: [],
+        temDefeito: false,
+        precisaCotacao: false,
+        offerExpiresAt: new Date('2026-09-08T20:30:00.000Z'),
+        valorComDesconto: 4666.35,
+      }),
+    });
+  });
+
+  it('ignora um campo valorManual injetado e calcula pela tabela ativa', async () => {
+    const result = await service.calculateTrade({
+      modeloAtual: 'iPhone 14 Plus',
+      capacidadeAtual: '128GB',
+      corAtual: 'Preto',
+      bateriaAtual: 85,
+      defeitos: ['nenhum'],
+      pecasTrocadas: false,
+      modeloDesejado: 'variant-1',
+      valorManual: 999999,
+    } as Parameters<TradeCalculatorService['calculateTrade']>[0] & {
+      valorManual: number;
+    });
+
+    expect(result.valorBase).toBe(3400);
+    expect(result.valorManualUsado).toBe(false);
+    expect(prismaMock.valorTroca.findFirst).toHaveBeenCalled();
+    expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ valorBase: 3400, valorManualUsado: false }),
+    });
+  });
+
+  it('marca defeito grave como cotação manual e persiste a flag correta', async () => {
+    const result = await service.calculateTrade({
+      modeloAtual: 'iPhone 14 Plus',
+      capacidadeAtual: '128GB',
+      corAtual: 'Preto',
+      bateriaAtual: 85,
+      defeitos: ['tela_quebrada'],
+      pecasTrocadas: false,
+      modeloDesejado: 'variant-1',
+    });
+
+    expect(result.temDefeito).toBe(true);
+    expect(result.precisaCotacao).toBe(true);
+    expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        defeitos: ['tela_quebrada'],
+        temDefeito: true,
+        precisaCotacao: true,
+      }),
+    });
+  });
+
+  it('retorna 422 com orientação útil sem criar simulação quando falta valor ativo', async () => {
     prismaMock.valorTroca.findFirst.mockResolvedValue(null);
-    await expect(service.calculateTrade(request)).rejects.toMatchObject({
+
+    await expect(
+      service.calculateTrade({
+        modeloAtual: 'iPhone 15',
+        capacidadeAtual: '512GB',
+        corAtual: 'Preto',
+        bateriaAtual: 85,
+        defeitos: ['nenhum'],
+        pecasTrocadas: false,
+        modeloDesejado: 'variant-1',
+      }),
+    ).rejects.toMatchObject({
       status: 422,
-      response: { code: "TRADE_VALUE_NOT_FOUND" },
+      response: {
+        statusCode: 422,
+        code: 'TRADE_VALUE_NOT_FOUND',
+        message: expect.stringContaining('iPhone 15 512GB'),
+      },
+    });
+    expect(prismaMock.valorTroca.findFirst).toHaveBeenCalledWith({
+      where: { modelo: 'iPhone 15', capacidade: '512GB', ativo: true },
     });
     expect(prismaMock.questionarioTroca.create).not.toHaveBeenCalled();
   });
