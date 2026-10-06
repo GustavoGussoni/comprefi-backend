@@ -88,6 +88,28 @@ describe('TradeCalculatorService', () => {
     });
   });
 
+  it('ignora um campo valorManual injetado e calcula pela tabela ativa', async () => {
+    const result = await service.calculateTrade({
+      modeloAtual: 'iPhone 14 Plus',
+      capacidadeAtual: '128GB',
+      corAtual: 'Preto',
+      bateriaAtual: 85,
+      defeitos: ['nenhum'],
+      pecasTrocadas: false,
+      modeloDesejado: 'variant-1',
+      valorManual: 999999,
+    } as Parameters<TradeCalculatorService['calculateTrade']>[0] & {
+      valorManual: number;
+    });
+
+    expect(result.valorBase).toBe(3400);
+    expect(result.valorManualUsado).toBe(false);
+    expect(prismaMock.valorTroca.findFirst).toHaveBeenCalled();
+    expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ valorBase: 3400, valorManualUsado: false }),
+    });
+  });
+
   it('marca defeito grave como cotação manual e persiste a flag correta', async () => {
     const result = await service.calculateTrade({
       modeloAtual: 'iPhone 14 Plus',

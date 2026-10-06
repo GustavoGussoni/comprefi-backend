@@ -13,30 +13,22 @@ export class TradeCalculatorService {
   async calculateTrade(data: CalculateTradeDto): Promise<TradeResultDto> {
     const defeitos = this.normalizeDefects(data.defeitos);
     const temDefeito = defeitos.length > 0;
-    let valorBase: number;
-    let valorManualUsado = false;
+    const valorManualUsado = false;
+    const valorTabela = await this.getValorBase(
+      data.modeloAtual,
+      data.capacidadeAtual,
+    );
 
-    if (data.valorManual !== undefined && data.valorManual !== null) {
-      valorBase = this.roundCurrency(data.valorManual);
-      valorManualUsado = true;
-      this.logger.log(`Usando valor manual: R$ ${valorBase.toFixed(2)}`);
-    } else {
-      const valorTabela = await this.getValorBase(
-        data.modeloAtual,
-        data.capacidadeAtual,
-      );
-
-      if (!valorTabela) {
-        throw new UnprocessableEntityException({
-          statusCode: 422,
-          code: "TRADE_VALUE_NOT_FOUND",
-          message: `Ainda não há valor de troca cadastrado para ${data.modeloAtual} ${data.capacidadeAtual}. Revise o modelo e a capacidade informados ou fale com nossa equipe.`,
-        });
-      }
-
-      valorBase = this.roundCurrency(valorTabela.valorBase);
-      this.logger.log(`Usando valor da tabela: R$ ${valorBase.toFixed(2)}`);
+    if (!valorTabela) {
+      throw new UnprocessableEntityException({
+        statusCode: 422,
+        code: "TRADE_VALUE_NOT_FOUND",
+        message: `Ainda não há valor de troca cadastrado para ${data.modeloAtual} ${data.capacidadeAtual}. Revise o modelo e a capacidade informados ou fale com nossa equipe.`,
+      });
     }
+
+    const valorBase = this.roundCurrency(valorTabela.valorBase);
+    this.logger.log(`Usando valor da tabela: R$ ${valorBase.toFixed(2)}`);
 
     const depreciacaoBateria = this.roundCurrency(
       this.calculateBatteryDepreciation(data.bateriaAtual, valorBase),
@@ -75,7 +67,7 @@ export class TradeCalculatorService {
 
     const resumoDetalhado = `Cálculo de troca:
 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
-Valor base: R$ ${valorBase.toFixed(2)} ${valorManualUsado ? "(manual)" : "(tabela)"}
+Valor base: R$ ${valorBase.toFixed(2)} (tabela)
 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}

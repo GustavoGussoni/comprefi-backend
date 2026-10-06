@@ -43,16 +43,6 @@ export class CalculateTradeDto {
   bateriaAtual: number;
 
   @ApiPropertyOptional({
-    description: "Valor manual do aparelho atual; sobrescreve a tabela",
-    example: 3500,
-    minimum: 0,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  valorManual?: number;
-
-  @ApiPropertyOptional({
     description: "Lista de defeitos selecionados",
     example: ["detalhe_leve", "risco_tela"],
     type: [String],
