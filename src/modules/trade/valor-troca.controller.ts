@@ -13,7 +13,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagg
 import { IsString, IsNumber, IsOptional, IsBoolean } from "class-validator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PrismaService } from "../../database/prisma.service";
-
+import { AdminIdentityGuard } from "../auth/admin-identity.guard";
 // DTOs com validação
 class CreateValorTrocaDto {
   @IsString()
@@ -118,7 +118,7 @@ export class ValorTrocaController {
   // POST /trade/valores — Criar novo valor
   // ========================================
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Criar novo valor de troca" })
   @ApiResponse({ status: 201, description: "Valor criado com sucesso" })
@@ -138,7 +138,7 @@ export class ValorTrocaController {
   // POST /trade/valores/bulk — Criar/atualizar em lote
   // ========================================
   @Post("bulk")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Criar ou atualizar valores em lote (upsert)" })
   async bulkUpsert(@Body() data: CreateValorTrocaDto[]) {
@@ -173,7 +173,7 @@ export class ValorTrocaController {
   // PATCH /trade/valores/:id — Atualizar valor
   // ========================================
   @Patch(":id")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Atualizar valor de troca" })
   @ApiResponse({ status: 200, description: "Valor atualizado com sucesso" })
@@ -188,7 +188,7 @@ export class ValorTrocaController {
   // DELETE /trade/valores/:id — Deletar valor
   // ========================================
   @Delete(":id")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Deletar valor de troca" })
   @ApiResponse({ status: 200, description: "Valor deletado com sucesso" })

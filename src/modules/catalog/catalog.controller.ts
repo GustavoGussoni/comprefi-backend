@@ -13,6 +13,7 @@ HttpStatus,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { AdminIdentityGuard } from "../auth/admin-identity.guard";
 import { PrismaService } from "../../database/prisma.service";
 
 @ApiTags("Catalog")
@@ -197,7 +198,7 @@ async getAllProductsAdmin(
 }
 
 @Put("admin/products/:slug/variants")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminIdentityGuard)
 @ApiBearerAuth()
 @ApiOperation({ summary: "Atualizar preços de variantes em lote" })
 async updateVariants(
@@ -257,7 +258,7 @@ async updateVariants(
 }
 
 @Put("admin/products/:slug")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminIdentityGuard)
 @ApiBearerAuth()
 @ApiOperation({ summary: "Atualizar dados de um produto" })
 async updateProduct(
@@ -300,7 +301,7 @@ async updateProduct(
 }
 
 @Post("admin/products")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminIdentityGuard)
 @ApiBearerAuth()
 @ApiOperation({ summary: "Criar um novo produto" })
 async createProduct(
@@ -362,7 +363,7 @@ async createProduct(
 }
 
 @Delete("admin/products/:slug")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AdminIdentityGuard)
 @ApiBearerAuth()
 @ApiOperation({ summary: "Desativar um produto (soft delete)" })
 async deactivateProduct(@Param("slug") slug: string) {

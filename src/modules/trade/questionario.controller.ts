@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { AdminIdentityGuard } from "../auth/admin-identity.guard";
 import { PrismaService } from "../../database/prisma.service";
 
 @ApiTags("Questionários de Troca (Admin)")
@@ -160,7 +161,7 @@ export class QuestionarioController {
   // PATCH /trade/questionarios/:id — Atualizar (marcar como concluído, etc.)
   // ========================================
   @Patch(":id")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Atualizar questionário (marcar concluído, adicionar contato)" })
   async update(@Param("id") id: string, @Body() data: any) {
@@ -174,7 +175,7 @@ export class QuestionarioController {
   // DELETE /trade/questionarios/:id — Deletar
   // ========================================
   @Delete(":id")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Deletar questionário" })
   async remove(@Param("id") id: string) {

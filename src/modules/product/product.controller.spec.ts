@@ -3,6 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { ProductController } from "./product.controller";
 import { ProductService } from "./product.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { AdminIdentityGuard } from "../auth/admin-identity.guard";
 
 describe("ProductController", () => {
   let controller: ProductController;
@@ -37,6 +38,8 @@ describe("ProductController", () => {
     })
       .overrideGuard(JwtAuthGuard)
       .useValue(mockJwtAuthGuard)
+      .overrideGuard(AdminIdentityGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
       .compile();
 
     controller = module.get<ProductController>(ProductController);
