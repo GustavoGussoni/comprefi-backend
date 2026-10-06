@@ -127,7 +127,7 @@ export class ProductService {
     };
   }
 
-  async syncFromGoogleSheets(userId: string) {
+  async syncFromGoogleSheets(_userId: string) {
     // Esta funcionalidade será implementada para sincronizar com Google Sheets
     // Por enquanto, retorna uma mensagem indicando que está em desenvolvimento
     return {
@@ -197,4 +197,3 @@ export class ProductService {
     };
   }
 }
-

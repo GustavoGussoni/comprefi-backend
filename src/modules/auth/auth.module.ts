@@ -1,5 +1,9 @@
 import { Module } from "@nestjs/common";
-import { JwtModule, JwtModuleOptions } from "@nestjs/jwt";
+import {
+  JwtModule,
+  JwtModuleOptions,
+  JwtSignOptions,
+} from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
@@ -7,7 +11,7 @@ import { AuthController } from "./auth.controller";
 import { UsersModule } from "../users/users.module";
 import { JwtStrategy } from "./jwt.strategy";
 import { LocalStrategy } from "./local.strategy";
-import { AdminIdentityGuard } from "./admin-identity.guard";
+import { RolesGuard } from "./roles.guard";
 
 @Module({
   imports: [
@@ -18,12 +22,13 @@ import { AdminIdentityGuard } from "./admin-identity.guard";
       useFactory: async (
         configService: ConfigService
       ): Promise<JwtModuleOptions> => {
-        const expiresIn = configService.get<string>("EXPIRES_IN") || "24h";
+        const expiresIn = configService.getOrThrow<string>("EXPIRES_IN");
+        const secret = configService.getOrThrow<string>("SECRET_KEY");
+
         return {
-          secret:
-            configService.get<string>("SECRET_KEY") || "default-secret-key",
+          secret,
           signOptions: {
-            expiresIn: expiresIn as any,
+            expiresIn: expiresIn as JwtSignOptions["expiresIn"],
           },
         };
       },
@@ -31,7 +36,7 @@ import { AdminIdentityGuard } from "./admin-identity.guard";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy, AdminIdentityGuard],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, LocalStrategy, RolesGuard],
+  exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}

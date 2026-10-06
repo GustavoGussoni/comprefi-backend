@@ -16,8 +16,10 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { CalculatePricesDto } from './dto/calculate-prices.dto';
 import { ApiBearerAuth, ApiQuery, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { AdminIdentityGuard } from '../auth/admin-identity.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
 
 @ApiTags('Products')
 @Controller('products')
@@ -28,7 +30,8 @@ export class ProductController {
   @ApiOperation({ summary: 'Criar um novo produto' })
   @ApiResponse({ status: 201, description: 'Produto criado com sucesso' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   create(@Body() createProductDto: CreateProductDto, @Request() req) {
     return this.productService.create(createProductDto, req.user.id);
   }
@@ -104,7 +107,8 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Produto atualizado com sucesso' })
   @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);
   }
@@ -115,7 +119,8 @@ export class ProductController {
   @ApiResponse({ status: 404, description: 'Produto não encontrado' })
   @HttpCode(204)
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
@@ -131,7 +136,8 @@ export class ProductController {
   @ApiOperation({ summary: 'Criar múltiplos produtos em lote' })
   @ApiResponse({ status: 201, description: 'Produtos criados com sucesso' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   bulkCreate(@Body() createProductsDto: CreateProductDto[], @Request() req) {
     return this.productService.bulkCreate(createProductsDto, req.user.id);
   }
@@ -140,7 +146,8 @@ export class ProductController {
   @ApiOperation({ summary: 'Sincronizar produtos a partir de planilha Google Sheets' })
   @ApiResponse({ status: 200, description: 'Sincronização realizada com sucesso' })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, AdminIdentityGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   syncFromSheet(@Request() req) {
     return this.productService.syncFromGoogleSheets(req.user.id);
   }
