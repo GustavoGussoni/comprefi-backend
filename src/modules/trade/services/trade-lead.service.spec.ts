@@ -204,6 +204,69 @@ describe('TradeLeadService', () => {
     expect(payload.mensagemFollowUp).toContain('valor original aplicado');
   });
 
+  it('envia a cotação manual ao CRM sem preço, cupom nem prazo fictícios', async () => {
+    const existing = makeQuestionario({
+      precisaCotacao: true,
+      defeitos: ['tela_quebrada'],
+      valorAparelho: 0,
+      valorFinal: 7119,
+      valorComDesconto: 6905.43,
+      offerExpiresAt: new Date('2026-09-08T20:30:00.000Z'),
+    });
+    const pending = makeQuestionario({
+      ...existing,
+      ...contact,
+      offerExpiresAt: null,
+      crmStatus: CrmDeliveryStatus.PENDING,
+    });
+    prismaMock.questionarioTroca.findUnique.mockResolvedValue(existing);
+    prismaMock.questionarioTroca.update
+      .mockResolvedValueOnce(pending)
+      .mockResolvedValueOnce(
+        makeQuestionario({ ...pending, crmStatus: CrmDeliveryStatus.SENT }),
+      );
+    dataCrazyMock.sendTrade.mockResolvedValue({});
+
+    const result = await service.submitContact(existing.id, contact);
+    const payload = dataCrazyMock.sendTrade.mock.calls[0][0] as Record<
+      string,
+      unknown
+    >;
+
+    expect(result).toMatchObject({
+      crmSent: true,
+      offerExpiresAt: null,
+      ofertaExpirada: false,
+    });
+    expect(prismaMock.questionarioTroca.update).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        data: expect.objectContaining({ offerExpiresAt: null }),
+      }),
+    );
+    expect(payload).toMatchObject({
+      precisaCotacao: true,
+      cupomDesconto: '',
+      offerExpiresAt: '',
+      ofertaExpirada: false,
+    });
+    for (const key of [
+      'valorBase',
+      'valorAparelho',
+      'valorFinal',
+      'valorComDesconto',
+      'valorAPagar',
+      'valorTotal',
+    ]) {
+      expect(payload).not.toHaveProperty(key);
+    }
+    expect(payload.mensagemFollowUp).toContain(
+      'aguardando avaliação individual',
+    );
+    expect(payload.mensagemFollowUp).not.toContain('Valor a pagar:');
+    expect(payload.mensagemFollowUp).not.toContain('Oferta de 3% ativa');
+  });
+
   it('ignora simulações anteriores ao marco comercial de staging', async () => {
     process.env.NODE_ENV = 'staging';
     jest.setSystemTime(new Date('2026-10-06T18:00:00.000Z'));
@@ -353,6 +416,8 @@ describe('TradeLeadService', () => {
     expect(prismaMock.questionarioTroca.findFirst).toHaveBeenCalledWith({
       where: {
         id: { not: 'questionario-2' },
+        precisaCotacao: false,
+        offerExpiresAt: { not: null },
         OR: expect.arrayContaining([
           { email: { equals: contact.email, mode: 'insensitive' } },
         ]),
