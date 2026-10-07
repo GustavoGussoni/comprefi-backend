@@ -360,31 +360,28 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto?.toFixed(2)}`;
   }
 
   async getValidCombinations() {
-    // Retorna combinações válidas de modelo + capacidade
-    const combinations = {
-      'iPhone 11': ['64GB', '128GB', '256GB'],
-      'iPhone 11 Pro': ['64GB', '256GB', '512GB'],
-      'iPhone 11 Pro Max': ['64GB', '256GB', '512GB'],
-      'iPhone 12': ['64GB', '128GB', '256GB'],
-      'iPhone 12 Pro': ['128GB', '256GB', '512GB'],
-      'iPhone 12 Pro Max': ['128GB', '256GB', '512GB'],
-      'iPhone 13': ['128GB', '256GB', '512GB'],
-      'iPhone 13 Pro': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 13 Pro Max': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 14': ['128GB', '256GB', '512GB'],
-      'iPhone 14 Plus': ['128GB', '256GB', '512GB'],
-      'iPhone 14 Pro': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 14 Pro Max': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 15': ['128GB', '256GB', '512GB'],
-      'iPhone 15 Plus': ['128GB', '256GB', '512GB'],
-      'iPhone 15 Pro': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 15 Pro Max': ['256GB', '512GB', '1TB'],
-      'iPhone 16': ['128GB', '256GB', '512GB'],
-      'iPhone 16 Plus': ['128GB', '256GB', '512GB'],
-      'iPhone 16 Pro': ['128GB', '256GB', '512GB', '1TB'],
-      'iPhone 16 Pro Max': ['256GB', '512GB', '1TB'],
+    // A lista pública deve acompanhar as combinações que o cálculo aceita.
+    const rows = await this.prisma.valorTroca.findMany({
+      where: { ativo: true, modelo: { startsWith: 'iPhone ' } },
+      select: { modelo: true, capacidade: true },
+      orderBy: [{ modelo: 'asc' }, { capacidade: 'asc' }],
+    });
+    const combinations: Record<string, string[]> = {};
+    for (const { modelo, capacidade } of rows) {
+      if (!combinations[modelo]) combinations[modelo] = [];
+      if (!combinations[modelo].includes(capacidade)) {
+        combinations[modelo].push(capacidade);
+      }
+    }
+    const capacityInGB = (capacity: string) => {
+      const match = capacity.match(/^(\d+)(GB|TB)$/i);
+      return match
+        ? Number(match[1]) * (match[2].toUpperCase() === 'TB' ? 1024 : 1)
+        : Number.MAX_SAFE_INTEGER;
     };
-
+    for (const capacities of Object.values(combinations)) {
+      capacities.sort((a, b) => capacityInGB(a) - capacityInGB(b));
+    }
     return combinations;
   }
 
@@ -487,6 +484,10 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto?.toFixed(2)}`;
         'Titânio Branco',
         'Titânio Deserto',
       ],
+      // iPhone 17: acabamentos oficiais da Apple para o mercado brasileiro.
+      'iPhone 17': ['Preto', 'Branco', 'Azul-névoa', 'Sálvia', 'Lavanda'],
+      'iPhone 17 Pro': ['Prateado', 'Laranja-cósmico', 'Azul-intenso'],
+      'iPhone 17 Pro Max': ['Prateado', 'Laranja-cósmico', 'Azul-intenso'],
     };
 
     return colorMap[modelo] || ['Preto', 'Branco', 'Azul', 'Vermelho'];
