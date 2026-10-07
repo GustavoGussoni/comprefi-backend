@@ -1,6 +1,10 @@
-import { Injectable, Logger, UnprocessableEntityException } from "@nestjs/common";
-import { PrismaService } from "../../../database/prisma.service";
-import { CalculateTradeDto, TradeResultDto } from "../dto/calculate-trade.dto";
+import {
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { PrismaService } from '../../../database/prisma.service';
+import { CalculateTradeDto, TradeResultDto } from '../dto/calculate-trade.dto';
 
 @Injectable()
 export class TradeCalculatorService {
@@ -22,7 +26,7 @@ export class TradeCalculatorService {
     if (!valorTabela) {
       throw new UnprocessableEntityException({
         statusCode: 422,
-        code: "TRADE_VALUE_NOT_FOUND",
+        code: 'TRADE_VALUE_NOT_FOUND',
         message: `Ainda não há valor de troca cadastrado para ${data.modeloAtual} ${data.capacidadeAtual}. Revise o modelo e a capacidade informados ou fale com nossa equipe.`,
       });
     }
@@ -34,11 +38,11 @@ export class TradeCalculatorService {
       this.calculateBatteryDepreciation(data.bateriaAtual, valorBase),
     );
     const defeitosGraves = [
-      "tela_quebrada",
-      "camera_quebrada",
-      "faceid_off",
-      "traseira_quebrada",
-      "outros",
+      'tela_quebrada',
+      'camera_quebrada',
+      'faceid_off',
+      'traseira_quebrada',
+      'outros',
     ];
     const precisaCotacao =
       defeitos.some((defeito) => defeitosGraves.includes(defeito)) ||
@@ -52,34 +56,46 @@ export class TradeCalculatorService {
 
     const produtoDesejado = await this.getProdutoDesejado(data.modeloDesejado);
     const precoProduto = this.parsePrice(produtoDesejado.pixPrice);
-    const valorFinal = this.roundCurrency(
-      Math.max(0, precoProduto - valorAparelho),
-    );
-    const descontoPercentual = TradeCalculatorService.DISCOUNT_PERCENT;
-    const valorComDesconto = this.roundCurrency(
-      valorFinal * (1 - descontoPercentual / 100),
-    );
-    const cupomDesconto = this.generateCouponCode();
-    const offerExpiresAt = new Date(
-      Date.now() +
-        TradeCalculatorService.OFFER_DURATION_MINUTES * 60 * 1000,
-    );
+    // A depreciação interna não é um crédito confirmado para cotação manual.
+    const creditoAprovado = precisaCotacao ? null : valorAparelho;
+    const valorFinal = precisaCotacao
+      ? null
+      : this.roundCurrency(Math.max(0, precoProduto - valorAparelho));
+    const descontoPercentual = precisaCotacao
+      ? 0
+      : TradeCalculatorService.DISCOUNT_PERCENT;
+    const valorComDesconto =
+      valorFinal === null
+        ? null
+        : this.roundCurrency(valorFinal * (1 - descontoPercentual / 100));
+    const cupomDesconto = precisaCotacao ? '' : this.generateCouponCode();
+    const offerExpiresAt = precisaCotacao
+      ? null
+      : new Date(
+          Date.now() +
+            TradeCalculatorService.OFFER_DURATION_MINUTES * 60 * 1000,
+        );
 
-    const resumoDetalhado = `Cálculo de troca:
+    const resumoDetalhado = precisaCotacao
+      ? `Cotação manual necessária:
+Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
+Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
+Crédito e valor a pagar aguardam avaliação individual.`
+      : `Cálculo de troca:
 Aparelho atual: ${data.modeloAtual} ${data.capacidadeAtual}
 Valor base: R$ ${valorBase.toFixed(2)} (tabela)
 Depreciação bateria (${data.bateriaAtual}%): -R$ ${depreciacaoBateria.toFixed(2)}
 Depreciação defeitos: -R$ ${depreciacaoDefeitos.toFixed(2)}
 Valor final aparelho: R$ ${valorAparelho.toFixed(2)}
 Produto desejado: ${produtoDesejado.modelo} (${produtoDesejado.pixPrice})
-Valor a pagar: R$ ${valorFinal.toFixed(2)}
-Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
+Valor a pagar: R$ ${valorFinal?.toFixed(2)}
+Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto?.toFixed(2)}`;
 
     const questionario = await this.saveQuestionario(data, defeitos, {
       valorBase,
       depreciacaoBateria,
       depreciacaoDefeitos,
-      valorAparelho,
+      valorAparelho: creditoAprovado,
       precoProduto,
       valorFinal,
       valorComDesconto,
@@ -96,12 +112,12 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
 
     return {
       questionarioId: questionario.id,
-      offerExpiresAt: offerExpiresAt.toISOString(),
+      offerExpiresAt: offerExpiresAt?.toISOString() ?? null,
       descontoPercentual,
       valorBase,
       depreciacaoBateria,
       depreciacaoDefeitos,
-      valorAparelho,
+      valorAparelho: creditoAprovado,
       precoProduto,
       valorFinal,
       valorComDesconto,
@@ -124,48 +140,51 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
     });
   }
 
-  private calculateBatteryDepreciation(bateria: number, valorBase: number): number {
+  private calculateBatteryDepreciation(
+    bateria: number,
+    valorBase: number,
+  ): number {
     // Regra proporcional: desconto é um % do valor base
-    if (bateria >= 99) return Math.round(valorBase * 0.04);  // 99-100% → -4%
-    if (bateria >= 88) return Math.round(valorBase * 0.08);  // 88-98% → -8%
-    if (bateria >= 80) return Math.round(valorBase * 0.16);  // 80-87% → -16%
-    return Math.round(valorBase * 0.32);                     // < 80% → -32%
+    if (bateria >= 99) return Math.round(valorBase * 0.04); // 99-100% → -4%
+    if (bateria >= 88) return Math.round(valorBase * 0.08); // 88-98% → -8%
+    if (bateria >= 80) return Math.round(valorBase * 0.16); // 80-87% → -16%
+    return Math.round(valorBase * 0.32); // < 80% → -32%
   }
 
   private calculateDefectsDepreciation(
     defeitos: string[],
-    modelo: string
+    modelo: string,
   ): number {
     let total = 0;
 
     for (const defeito of defeitos) {
       switch (defeito) {
-        case "detalhe_leve":
+        case 'detalhe_leve':
           total += 200;
           break;
-        case "detalhe_capinha":
+        case 'detalhe_capinha':
           total += 150;
           break;
-        case "risco_tela":
+        case 'risco_tela':
           total += 300;
           break;
-        case "risco_camera":
+        case 'risco_camera':
           total += 400;
           break;
-        case "amassado":
+        case 'amassado':
           total += 400;
           break;
-        case "tela_quebrada":
+        case 'tela_quebrada':
           // Estes deveriam ir para cotação manual, mas caso passem:
           total += this.isOldModel(modelo) ? 800 : 2000;
           break;
-        case "camera_quebrada":
+        case 'camera_quebrada':
           total += 600;
           break;
-        case "faceid_off":
+        case 'faceid_off':
           total += this.isOldModel(modelo) ? 400 : 800;
           break;
-        case "traseira_quebrada":
+        case 'traseira_quebrada':
           total += 1000;
           break;
       }
@@ -175,15 +194,17 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
   }
 
   private isOldModel(modelo: string): boolean {
-    return modelo.includes("iPhone 11") || modelo.includes("iPhone 12");
+    return modelo.includes('iPhone 11') || modelo.includes('iPhone 12');
   }
 
   private async getProdutoDesejado(modeloDesejado: string) {
     // 1. Tentar buscar por ID direto (o frontend envia o variant ID)
-    const variantById = await this.prisma.productVariant.findUnique({
-      where: { id: modeloDesejado },
-      include: { productGroup: true },
-    }).catch(() => null); // catch caso não seja um ID válido
+    const variantById = await this.prisma.productVariant
+      .findUnique({
+        where: { id: modeloDesejado },
+        include: { productGroup: true },
+      })
+      .catch(() => null); // catch caso não seja um ID válido
 
     if (variantById && variantById.isActive) {
       return {
@@ -201,7 +222,7 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
         productGroup: {
           model: {
             contains: modeloDesejado,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
           isActive: true,
         },
@@ -210,7 +231,7 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
         productGroup: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -228,12 +249,12 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
       where: {
         model: {
           contains: modeloDesejado,
-          mode: "insensitive",
+          mode: 'insensitive',
         },
         isActive: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -252,10 +273,10 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
   private parsePrice(priceString: string): number {
     const value = Number(
       priceString
-        .replace("R$", "")
-        .replace(/\s/g, "")
-        .replace(/\./g, "")
-        .replace(",", "."),
+        .replace('R$', '')
+        .replace(/\s/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.'),
     );
 
     if (!Number.isFinite(value)) {
@@ -270,7 +291,7 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
       new Set(
         (defeitos ?? [])
           .map((defeito) => defeito.trim())
-          .filter((defeito) => defeito.length > 0 && defeito !== "nenhum"),
+          .filter((defeito) => defeito.length > 0 && defeito !== 'nenhum'),
       ),
     );
   }
@@ -292,14 +313,14 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
       valorBase: number;
       depreciacaoBateria: number;
       depreciacaoDefeitos: number;
-      valorAparelho: number;
+      valorAparelho: number | null;
       precoProduto: number;
-      valorFinal: number;
-      valorComDesconto: number;
+      valorFinal: number | null;
+      valorComDesconto: number | null;
       descontoPercentual: number;
       valorManualUsado: boolean;
       cupomDesconto: string;
-      offerExpiresAt: Date;
+      offerExpiresAt: Date | null;
       temDefeito: boolean;
       precisaCotacao: boolean;
       produtoDesejadoNome: string;
@@ -341,27 +362,27 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
   async getValidCombinations() {
     // Retorna combinações válidas de modelo + capacidade
     const combinations = {
-      "iPhone 11": ["64GB", "128GB", "256GB"],
-      "iPhone 11 Pro": ["64GB", "256GB", "512GB"],
-      "iPhone 11 Pro Max": ["64GB", "256GB", "512GB"],
-      "iPhone 12": ["64GB", "128GB", "256GB"],
-      "iPhone 12 Pro": ["128GB", "256GB", "512GB"],
-      "iPhone 12 Pro Max": ["128GB", "256GB", "512GB"],
-      "iPhone 13": ["128GB", "256GB", "512GB"],
-      "iPhone 13 Pro": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 13 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 14": ["128GB", "256GB", "512GB"],
-      "iPhone 14 Plus": ["128GB", "256GB", "512GB"],
-      "iPhone 14 Pro": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 14 Pro Max": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 15": ["128GB", "256GB", "512GB"],
-      "iPhone 15 Plus": ["128GB", "256GB", "512GB"],
-      "iPhone 15 Pro": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 15 Pro Max": ["256GB", "512GB", "1TB"],
-      "iPhone 16": ["128GB", "256GB", "512GB"],
-      "iPhone 16 Plus": ["128GB", "256GB", "512GB"],
-      "iPhone 16 Pro": ["128GB", "256GB", "512GB", "1TB"],
-      "iPhone 16 Pro Max": ["256GB", "512GB", "1TB"],
+      'iPhone 11': ['64GB', '128GB', '256GB'],
+      'iPhone 11 Pro': ['64GB', '256GB', '512GB'],
+      'iPhone 11 Pro Max': ['64GB', '256GB', '512GB'],
+      'iPhone 12': ['64GB', '128GB', '256GB'],
+      'iPhone 12 Pro': ['128GB', '256GB', '512GB'],
+      'iPhone 12 Pro Max': ['128GB', '256GB', '512GB'],
+      'iPhone 13': ['128GB', '256GB', '512GB'],
+      'iPhone 13 Pro': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 13 Pro Max': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 14': ['128GB', '256GB', '512GB'],
+      'iPhone 14 Plus': ['128GB', '256GB', '512GB'],
+      'iPhone 14 Pro': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 14 Pro Max': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 15': ['128GB', '256GB', '512GB'],
+      'iPhone 15 Plus': ['128GB', '256GB', '512GB'],
+      'iPhone 15 Pro': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 15 Pro Max': ['256GB', '512GB', '1TB'],
+      'iPhone 16': ['128GB', '256GB', '512GB'],
+      'iPhone 16 Plus': ['128GB', '256GB', '512GB'],
+      'iPhone 16 Pro': ['128GB', '256GB', '512GB', '1TB'],
+      'iPhone 16 Pro Max': ['256GB', '512GB', '1TB'],
     };
 
     return combinations;
@@ -371,35 +392,104 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
     // Cores por modelo e geração
     const colorMap: Record<string, string[]> = {
       // iPhone 11
-      "iPhone 11": ["Preto", "Branco", "Vermelho", "Amarelo", "Roxo", "Verde"],
-      "iPhone 11 Pro": ["Dourado", "Cinza Espacial", "Prateado", "Verde Meia-noite"],
-      "iPhone 11 Pro Max": ["Dourado", "Cinza Espacial", "Prateado", "Verde Meia-noite"],
+      'iPhone 11': ['Preto', 'Branco', 'Vermelho', 'Amarelo', 'Roxo', 'Verde'],
+      'iPhone 11 Pro': [
+        'Dourado',
+        'Cinza Espacial',
+        'Prateado',
+        'Verde Meia-noite',
+      ],
+      'iPhone 11 Pro Max': [
+        'Dourado',
+        'Cinza Espacial',
+        'Prateado',
+        'Verde Meia-noite',
+      ],
       // iPhone 12
-      "iPhone 12": ["Preto", "Branco", "Vermelho", "Verde", "Azul", "Roxo"],
-      "iPhone 12 Pro": ["Dourado", "Grafite", "Prateado", "Azul Pacífico"],
-      "iPhone 12 Pro Max": ["Dourado", "Grafite", "Prateado", "Azul Pacífico"],
+      'iPhone 12': ['Preto', 'Branco', 'Vermelho', 'Verde', 'Azul', 'Roxo'],
+      'iPhone 12 Pro': ['Dourado', 'Grafite', 'Prateado', 'Azul Pacífico'],
+      'iPhone 12 Pro Max': ['Dourado', 'Grafite', 'Prateado', 'Azul Pacífico'],
       // iPhone 13
-      "iPhone 13": ["Rosa", "Azul", "Meia-noite", "Estelar", "Vermelho", "Verde"],
-      "iPhone 13 Pro": ["Dourado", "Grafite", "Prateado", "Azul Sierra", "Verde Alpino"],
-      "iPhone 13 Pro Max": ["Dourado", "Grafite", "Prateado", "Azul Sierra", "Verde Alpino"],
+      'iPhone 13': [
+        'Rosa',
+        'Azul',
+        'Meia-noite',
+        'Estelar',
+        'Vermelho',
+        'Verde',
+      ],
+      'iPhone 13 Pro': [
+        'Dourado',
+        'Grafite',
+        'Prateado',
+        'Azul Sierra',
+        'Verde Alpino',
+      ],
+      'iPhone 13 Pro Max': [
+        'Dourado',
+        'Grafite',
+        'Prateado',
+        'Azul Sierra',
+        'Verde Alpino',
+      ],
       // iPhone 14
-      "iPhone 14": ["Azul", "Roxo", "Amarelo", "Meia-noite", "Estelar", "Vermelho"],
-      "iPhone 14 Plus": ["Azul", "Roxo", "Amarelo", "Meia-noite", "Estelar", "Vermelho"],
-      "iPhone 14 Pro": ["Dourado", "Grafite", "Prateado", "Roxo Profundo"],
-      "iPhone 14 Pro Max": ["Dourado", "Grafite", "Prateado", "Roxo Profundo"],
+      'iPhone 14': [
+        'Azul',
+        'Roxo',
+        'Amarelo',
+        'Meia-noite',
+        'Estelar',
+        'Vermelho',
+      ],
+      'iPhone 14 Plus': [
+        'Azul',
+        'Roxo',
+        'Amarelo',
+        'Meia-noite',
+        'Estelar',
+        'Vermelho',
+      ],
+      'iPhone 14 Pro': ['Dourado', 'Grafite', 'Prateado', 'Roxo Profundo'],
+      'iPhone 14 Pro Max': ['Dourado', 'Grafite', 'Prateado', 'Roxo Profundo'],
       // iPhone 15
-      "iPhone 15": ["Rosa", "Amarelo", "Verde", "Azul", "Preto"],
-      "iPhone 15 Plus": ["Rosa", "Amarelo", "Verde", "Azul", "Preto"],
-      "iPhone 15 Pro": ["Titânio Natural", "Titânio Azul", "Titânio Branco", "Titânio Preto"],
-      "iPhone 15 Pro Max": ["Titânio Natural", "Titânio Azul", "Titânio Branco", "Titânio Preto"],
+      'iPhone 15': ['Rosa', 'Amarelo', 'Verde', 'Azul', 'Preto'],
+      'iPhone 15 Plus': ['Rosa', 'Amarelo', 'Verde', 'Azul', 'Preto'],
+      'iPhone 15 Pro': [
+        'Titânio Natural',
+        'Titânio Azul',
+        'Titânio Branco',
+        'Titânio Preto',
+      ],
+      'iPhone 15 Pro Max': [
+        'Titânio Natural',
+        'Titânio Azul',
+        'Titânio Branco',
+        'Titânio Preto',
+      ],
       // iPhone 16
-      "iPhone 16": ["Ultramarino", "Verde-azulado", "Rosa", "Branco", "Preto"],
-      "iPhone 16 Plus": ["Ultramarino", "Verde-azulado", "Rosa", "Branco", "Preto"],
-      "iPhone 16 Pro": ["Titânio Natural", "Titânio Preto", "Titânio Branco", "Titânio Deserto"],
-      "iPhone 16 Pro Max": ["Titânio Natural", "Titânio Preto", "Titânio Branco", "Titânio Deserto"],
+      'iPhone 16': ['Ultramarino', 'Verde-azulado', 'Rosa', 'Branco', 'Preto'],
+      'iPhone 16 Plus': [
+        'Ultramarino',
+        'Verde-azulado',
+        'Rosa',
+        'Branco',
+        'Preto',
+      ],
+      'iPhone 16 Pro': [
+        'Titânio Natural',
+        'Titânio Preto',
+        'Titânio Branco',
+        'Titânio Deserto',
+      ],
+      'iPhone 16 Pro Max': [
+        'Titânio Natural',
+        'Titânio Preto',
+        'Titânio Branco',
+        'Titânio Deserto',
+      ],
     };
 
-    return colorMap[modelo] || ["Preto", "Branco", "Azul", "Vermelho"];
+    return colorMap[modelo] || ['Preto', 'Branco', 'Azul', 'Vermelho'];
   }
 
   // Novo método para verificar se valor existe na tabela
@@ -411,19 +501,19 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto.toFixed(2)}`;
   // Novo método para sugerir valor baseado em modelos similares
   async suggestValue(
     modelo: string,
-    capacidade: string
+    capacidade: string,
   ): Promise<number | null> {
     // Buscar valores de modelos similares para sugestão
     const similarModels = await this.prisma.valorTroca.findMany({
       where: {
         OR: [
-          { modelo: { contains: modelo.split(" ")[1] } }, // Ex: "iPhone 13" busca por "13"
+          { modelo: { contains: modelo.split(' ')[1] } }, // Ex: "iPhone 13" busca por "13"
           { capacidade },
         ],
         ativo: true,
       },
       orderBy: {
-        valorBase: "desc",
+        valorBase: 'desc',
       },
       take: 3,
     });

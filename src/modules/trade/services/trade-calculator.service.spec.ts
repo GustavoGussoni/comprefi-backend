@@ -106,7 +106,10 @@ describe('TradeCalculatorService', () => {
     expect(result.valorManualUsado).toBe(false);
     expect(prismaMock.valorTroca.findFirst).toHaveBeenCalled();
     expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ valorBase: 3400, valorManualUsado: false }),
+      data: expect.objectContaining({
+        valorBase: 3400,
+        valorManualUsado: false,
+      }),
     });
   });
 
@@ -123,13 +126,46 @@ describe('TradeCalculatorService', () => {
 
     expect(result.temDefeito).toBe(true);
     expect(result.precisaCotacao).toBe(true);
+    expect(result).toMatchObject({
+      valorAparelho: null,
+      valorFinal: null,
+      valorComDesconto: null,
+      offerExpiresAt: null,
+      descontoPercentual: 0,
+      cupomDesconto: '',
+    });
+    expect(result.resumoDetalhado).toContain('aguardam avaliação individual');
+    expect(result.resumoDetalhado).not.toContain('Valor a pagar: R$');
     expect(prismaMock.questionarioTroca.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         defeitos: ['tela_quebrada'],
         temDefeito: true,
         precisaCotacao: true,
+        valorAparelho: null,
+        valorFinal: null,
+        valorComDesconto: null,
+        offerExpiresAt: null,
+        cupomDesconto: '',
       }),
     });
+  });
+
+  it('solicita avaliação manual quando há peça trocada sem criar prazo', async () => {
+    const result = await service.calculateTrade({
+      modeloAtual: 'iPhone 14 Plus',
+      capacidadeAtual: '128GB',
+      corAtual: 'Preto',
+      bateriaAtual: 85,
+      defeitos: ['nenhum'],
+      pecasTrocadas: true,
+      quaisPecas: 'tela',
+      modeloDesejado: 'variant-1',
+    });
+
+    expect(result.precisaCotacao).toBe(true);
+    expect(result.offerExpiresAt).toBeNull();
+    expect(result.valorAparelho).toBeNull();
+    expect(result.valorFinal).toBeNull();
   });
 
   it('retorna 422 com orientação útil sem criar simulação quando falta valor ativo', async () => {

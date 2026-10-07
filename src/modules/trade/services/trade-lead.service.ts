@@ -69,6 +69,7 @@ export class TradeLeadService {
             const prior = await tx.questionarioTroca.findFirst({
               where: {
                 id: { not: questionarioId },
+                precisaCotacao: false,
                 ...(process.env.NODE_ENV === 'staging'
                   ? {
                       createdAt: {
@@ -78,7 +79,7 @@ export class TradeLeadService {
                         gte: TradeLeadService.STAGING_OFFER_START_AT,
                       },
                     }
-                  : {}),
+                  : { offerExpiresAt: { not: null } }),
                 OR: [
                   {
                     email: {
@@ -92,13 +93,15 @@ export class TradeLeadService {
               orderBy: { createdAt: 'asc' },
               select: { offerExpiresAt: true },
             });
-            const offerExpiresAt = prior
-              ? !existing.offerExpiresAt || !prior.offerExpiresAt
-                ? null
-                : existing.offerExpiresAt < prior.offerExpiresAt
-                  ? existing.offerExpiresAt
-                  : prior.offerExpiresAt
-              : existing.offerExpiresAt;
+            const offerExpiresAt = existing.precisaCotacao
+              ? null
+              : prior
+                ? !existing.offerExpiresAt || !prior.offerExpiresAt
+                  ? null
+                  : existing.offerExpiresAt < prior.offerExpiresAt
+                    ? existing.offerExpiresAt
+                    : prior.offerExpiresAt
+                : existing.offerExpiresAt;
 
             if (existing.crmStatus === CrmDeliveryStatus.SENT && sameContact) {
               const persisted =
@@ -184,8 +187,10 @@ export class TradeLeadService {
     fonte = 'funil-troca',
   ): DataCrazyTradePayload {
     const now = new Date();
+    const manual = questionario.precisaCotacao;
     const ofertaExpirada =
-      !questionario.offerExpiresAt || questionario.offerExpiresAt <= now;
+      !manual &&
+      (!questionario.offerExpiresAt || questionario.offerExpiresAt <= now);
     const valorAparelho = this.money(questionario.valorAparelho);
     const valorFinal = this.money(questionario.valorFinal);
     const valorComDesconto = this.money(questionario.valorComDesconto);
@@ -212,28 +217,32 @@ export class TradeLeadService {
       whatsapp: questionario.whatsapp ?? '',
       dataEnvio: now.toISOString(),
       ondeOuviu: questionario.ondeOuviu ?? '',
-      valorBase: this.money(questionario.valorBase),
       quaisPecas: questionario.quaisPecas ?? '',
-      valorFinal,
-      valorTotal: this.money(valorAPagar + valorAparelho),
       modeloAtual: questionario.modeloAtual,
       bateriaAtual: questionario.bateriaAtual,
-      cupomDesconto: questionario.cupomDesconto ?? '',
+      cupomDesconto: manual ? '' : (questionario.cupomDesconto ?? ''),
       pecasTrocadas: questionario.pecasTrocadas,
       tempoPensando: questionario.tempoPensando ?? '',
       urgenciaTroca: questionario.urgenciaTroca ?? '',
-      valorAparelho,
       modeloDesejado,
-      precisaCotacao: questionario.precisaCotacao,
+      precisaCotacao: manual,
       capacidadeAtual: questionario.capacidadeAtual,
       mensagemFollowUp,
-      valorComDesconto,
-      depreciacaoBateria: this.money(questionario.depreciacaoBateria),
-      depreciacaoDefeitos: this.money(questionario.depreciacaoDefeitos),
       questionarioId: questionario.id,
-      offerExpiresAt: questionario.offerExpiresAt?.toISOString() ?? '',
+      offerExpiresAt: manual
+        ? ''
+        : (questionario.offerExpiresAt?.toISOString() ?? ''),
       ofertaExpirada,
-      valorAPagar,
+      ...(!manual && {
+        valorBase: this.money(questionario.valorBase),
+        valorFinal,
+        valorTotal: this.money(valorAPagar + valorAparelho),
+        valorAparelho,
+        valorComDesconto,
+        depreciacaoBateria: this.money(questionario.depreciacaoBateria),
+        depreciacaoDefeitos: this.money(questionario.depreciacaoDefeitos),
+        valorAPagar,
+      }),
     };
   }
 
@@ -278,7 +287,9 @@ export class TradeLeadService {
     crmSent: boolean,
   ): TradeContactSubmissionResult {
     const ofertaExpirada =
-      !questionario.offerExpiresAt || questionario.offerExpiresAt <= new Date();
+      !questionario.precisaCotacao &&
+      (!questionario.offerExpiresAt ||
+        questionario.offerExpiresAt <= new Date());
 
     return {
       questionarioId: questionario.id,
@@ -322,6 +333,23 @@ export class TradeLeadService {
     now: Date;
   }): string {
     const { questionario } = input;
+    if (questionario.precisaCotacao) {
+      return [
+        'SOLICITAÇÃO DE COTAÇÃO MANUAL — CompreFi',
+        `Cliente: ${questionario.nome ?? ''}`,
+        `Email: ${questionario.email ?? ''}`,
+        `WhatsApp: ${questionario.whatsapp ?? ''}`,
+        `CEP: ${questionario.cep ?? ''}`,
+        '',
+        `De: ${questionario.modeloAtual} ${questionario.capacidadeAtual}`,
+        `Para: ${input.modeloDesejado}`,
+        'Crédito pelo aparelho e diferença a pagar: aguardando avaliação individual.',
+        'Sem preço final, desconto ou prazo de oferta confirmado.',
+        `Formulário enviado em: ${input.now.toLocaleString('pt-BR', {
+          timeZone: 'America/Sao_Paulo',
+        })}`,
+      ].join('\n');
+    }
     const condition = input.ofertaExpirada
       ? 'Oferta de 3% expirada; valor original aplicado.'
       : `Oferta de 3% ativa até ${questionario.offerExpiresAt?.toLocaleString(
