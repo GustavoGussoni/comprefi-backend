@@ -5,6 +5,7 @@ describe('TradeCalculatorService', () => {
   const prismaMock = {
     valorTroca: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     productVariant: {
       findUnique: jest.fn(),
@@ -193,5 +194,46 @@ describe('TradeCalculatorService', () => {
       where: { modelo: 'iPhone 15', capacidade: '512GB', ativo: true },
     });
     expect(prismaMock.questionarioTroca.create).not.toHaveBeenCalled();
+  });
+
+  it('lista só combinações ativas do banco, incluindo a geração 17', async () => {
+    prismaMock.valorTroca.findMany.mockResolvedValue([
+      { modelo: 'iPhone 16', capacidade: '128GB' },
+      { modelo: 'iPhone 17', capacidade: '512GB' },
+      { modelo: 'iPhone 17', capacidade: '256GB' },
+      { modelo: 'iPhone 17 Pro Max', capacidade: '1TB' },
+      { modelo: 'iPhone 17 Pro Max', capacidade: '512GB' },
+    ]);
+    expect(await service.getValidCombinations()).toEqual({
+      'iPhone 16': ['128GB'],
+      'iPhone 17': ['256GB', '512GB'],
+      'iPhone 17 Pro Max': ['512GB', '1TB'],
+    });
+    expect(prismaMock.valorTroca.findMany).toHaveBeenCalledWith({
+      where: { ativo: true, modelo: { startsWith: 'iPhone ' } },
+      select: { modelo: true, capacidade: true },
+      orderBy: [{ modelo: 'asc' }, { capacidade: 'asc' }],
+    });
+    expect(prismaMock.questionarioTroca.create).not.toHaveBeenCalled();
+  });
+
+  it('não anuncia modelos sem valores ativos', async () => {
+    prismaMock.valorTroca.findMany.mockResolvedValue([]);
+    expect(await service.getValidCombinations()).toEqual({});
+  });
+
+  it('retorna as cores da linha 17 sem o fallback genérico', async () => {
+    expect(await service.getColorsByModel('iPhone 17')).toEqual([
+      'Preto',
+      'Branco',
+      'Azul-névoa',
+      'Sálvia',
+      'Lavanda',
+    ]);
+    expect(await service.getColorsByModel('iPhone 17 Pro Max')).toEqual([
+      'Prateado',
+      'Laranja-cósmico',
+      'Azul-intenso',
+    ]);
   });
 });
