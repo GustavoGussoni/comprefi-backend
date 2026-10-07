@@ -16,6 +16,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { RolesGuard } from "../auth/roles.guard";
 import { PrismaService } from "../../database/prisma.service";
+import { TradeValueWriterGuard } from "./trade-value-writer.guard";
 
 // DTOs com validação
 class CreateValorTrocaDto {
@@ -121,8 +122,8 @@ export class ValorTrocaController {
   // POST /trade/valores — Criar novo valor
   // ========================================
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard, TradeValueWriterGuard)
+  @Roles(UserRole.ADMIN, UserRole.SALES)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Criar novo valor de troca" })
   @ApiResponse({ status: 201, description: "Valor criado com sucesso" })
@@ -178,8 +179,8 @@ export class ValorTrocaController {
   // PATCH /trade/valores/:id — Atualizar valor
   // ========================================
   @Patch(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard, TradeValueWriterGuard)
+  @Roles(UserRole.ADMIN, UserRole.SALES)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Atualizar valor de troca" })
   @ApiResponse({ status: 200, description: "Valor atualizado com sucesso" })

@@ -42,7 +42,8 @@ describe("Permissões preservadas na promoção do admin v2", () => {
     [UsersController, "remove"],
     [CatalogController, "updateVariants"],
     [ProductController, "create"],
-    [ValorTrocaController, "create"],
+    [ValorTrocaController, "bulkUpsert"],
+    [ValorTrocaController, "remove"],
     [QuestionarioController, "remove"],
   ];
 

@@ -7,6 +7,7 @@ import { PrismaService } from "../../database/prisma.service";
 import { CrmModule } from "../crm/crm.module";
 import { TradeLeadService } from "./services/trade-lead.service";
 import { QuestionarioAdminService } from "./services/questionario-admin.service";
+import { TradeValueWriterGuard } from "./trade-value-writer.guard";
 
 @Module({
   imports: [CrmModule],
@@ -16,6 +17,7 @@ import { QuestionarioAdminService } from "./services/questionario-admin.service"
     TradeLeadService,
     QuestionarioAdminService,
     PrismaService,
+    TradeValueWriterGuard,
   ],
   exports: [TradeCalculatorService, TradeLeadService],
 })
