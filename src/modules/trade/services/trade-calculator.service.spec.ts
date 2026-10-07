@@ -203,11 +203,14 @@ describe('TradeCalculatorService', () => {
       { modelo: 'iPhone 17', capacidade: '256GB' },
       { modelo: 'iPhone 17 Pro Max', capacidade: '1TB' },
       { modelo: 'iPhone 17 Pro Max', capacidade: '512GB' },
+      { modelo: 'iPhone Air', capacidade: '256GB' },
+      { modelo: 'iPhone Air', capacidade: '512GB' },
     ]);
     expect(await service.getValidCombinations()).toEqual({
       'iPhone 16': ['128GB'],
       'iPhone 17': ['256GB', '512GB'],
       'iPhone 17 Pro Max': ['512GB', '1TB'],
+      'iPhone Air': ['256GB', '512GB'],
     });
     expect(prismaMock.valorTroca.findMany).toHaveBeenCalledWith({
       where: { ativo: true, modelo: { startsWith: 'iPhone ' } },
@@ -234,6 +237,12 @@ describe('TradeCalculatorService', () => {
       'Prateado',
       'Laranja-cósmico',
       'Azul-intenso',
+    ]);
+    expect(await service.getColorsByModel('iPhone Air')).toEqual([
+      'Preto-espacial',
+      'Branco-nuvem',
+      'Dourado-claro',
+      'Azul-céu',
     ]);
   });
 });

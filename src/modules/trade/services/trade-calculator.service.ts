@@ -488,6 +488,13 @@ Com desconto de ${descontoPercentual}%: R$ ${valorComDesconto?.toFixed(2)}`;
       'iPhone 17': ['Preto', 'Branco', 'Azul-névoa', 'Sálvia', 'Lavanda'],
       'iPhone 17 Pro': ['Prateado', 'Laranja-cósmico', 'Azul-intenso'],
       'iPhone 17 Pro Max': ['Prateado', 'Laranja-cósmico', 'Azul-intenso'],
+      // Fonte: https://support.apple.com/pt-br/125092
+      'iPhone Air': [
+        'Preto-espacial',
+        'Branco-nuvem',
+        'Dourado-claro',
+        'Azul-céu',
+      ],
     };
 
     return colorMap[modelo] || ['Preto', 'Branco', 'Azul', 'Vermelho'];
