@@ -27,12 +27,14 @@ enum CrmDeliveryStatus {
 }
 
 model User {
-  id       String    @id @default(uuid())
-  name     String
-  email    String    @unique
-  password String
-  role     UserRole  @default(SALES)
-  products Product[]
+  id               String             @id @default(uuid())
+  name             String
+  email            String             @unique
+  password         String
+  role             UserRole           @default(SALES)
+  products         Product[]
+  usedStockCreated UsedStockUnit[]    @relation("UsedStockCreator")
+  usedStockActions UsedStockHistory[] @relation("UsedStockActor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,4 +236,58 @@ model QuestionarioTroca {
   @@index([crmStatus])
   @@index([createdAt])
   @@map("questionario_troca")
+}
+
+// Uma linha por aparelho físico. Não altera o catálogo de novos nem o funil.
+enum UsedStockStatus {
+  draft
+  available
+  sold
+}
+
+model UsedStockUnit {
+  id                  String             @id @default(uuid())
+  revision            Int                @default(1)
+  creationKey         String
+  creationFingerprint String
+  model               String
+  storage             String
+  color               String
+  battery             Int?
+  details             String             @default("")
+  image               String             @default("")
+  imageIsIllustrative Boolean            @default(true)
+  realImages          String[]           @default([])
+  pixPrice            Decimal            @default(0) @db.Decimal(12, 2)
+  installments        Int                @default(12)
+  installmentPrice    Decimal            @default(0) @db.Decimal(12, 2)
+  imei                String?            @unique
+  internalNotes       String             @default("")
+  status              UsedStockStatus    @default(draft)
+  receivedAt          DateTime?
+  checkedAt           DateTime?
+  activatedAt         DateTime?
+  soldAt              DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  createdById         String
+  createdBy           User               @relation("UsedStockCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  history             UsedStockHistory[]
+
+  @@unique([createdById, creationKey])
+  @@index([status, createdAt])
+  @@map("used_stock_units")
+}
+
+model UsedStockHistory {
+  id      String        @id @default(uuid())
+  unitId  String
+  actorId String
+  action  String
+  at      DateTime      @default(now())
+  unit    UsedStockUnit @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  actor   User          @relation("UsedStockActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([unitId, at])
+  @@map("used_stock_history")
 }
