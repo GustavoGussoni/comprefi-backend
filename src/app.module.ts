@@ -9,6 +9,7 @@ import { PrismaService } from "./database/prisma.service";
 import { TradeModule } from "./modules/trade/trade.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
 import { validateEnvironment } from "./config/env.validation";
+import { UsedStockModule } from "./modules/used-stock/used-stock.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { validateEnvironment } from "./config/env.validation";
     UsersModule,
     TradeModule,
     CatalogModule,
+    UsedStockModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
