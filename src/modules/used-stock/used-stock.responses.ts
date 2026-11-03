@@ -8,13 +8,30 @@ export class UsedStockHistoryResponseDto {
   actorName!: string;
 }
 
+/** The selector is scoped to the central seminovo catalog, including inactive variants. */
+export class UsedStockCatalogVariantResponseDto {
+  id!: string;
+  productGroupId!: string;
+  slug!: string;
+  model!: string;
+  storage!: string;
+  color!: string;
+  isActive!: boolean;
+  groupIsActive!: boolean;
+  unitCount!: number;
+}
+
 /** Authenticated admin whitelist. It intentionally excludes creationKey and fingerprint. */
 export class UsedStockAdminResponseDto {
   id!: string;
   revision!: number;
+  /** Server-derived for linked units; stored snapshot for unlinked legacy records. */
   model!: string;
   storage!: string;
   color!: string;
+  catalogVariantId!: string | null;
+  catalogLinked!: boolean;
+  catalogActive!: boolean;
   battery!: number | null;
   details!: string;
   image!: string;
@@ -36,7 +53,7 @@ export class UsedStockAdminResponseDto {
   history!: UsedStockHistoryResponseDto[];
 }
 
-/** Public whitelist. No IMEI, notes, lifecycle, user data, history or creation data. */
+/** Public whitelist. No IMEI, notes, lifecycle, user data, history or catalog metadata. */
 export class UsedStockPublicResponseDto {
   id!: string;
   model!: string;

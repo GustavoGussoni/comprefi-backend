@@ -23,6 +23,13 @@ import {
 export const USED_STOCK_TEXT = /^[^\u0000-\u001f\u007f]*$/;
 const MAX_MONEY = 9_999_999_999.99;
 
+/** Historical illustration assets must never be selected as unit photos. */
+export const KNOWN_USED_STOCK_ILLUSTRATION_PATHS = [
+  "/assets/used-stock/iphone16-pro-max-natural.jpg",
+  "/assets/used-stock/iphone16-pro-max-preto.jpg",
+  "/assets/used-stock/iphone12-pro-max-azul.jpg",
+] as const;
+
 const supplied = (_object: unknown, value: unknown) => value !== undefined;
 const suppliedAndNotNull = (_object: unknown, value: unknown) =>
   value !== undefined && value !== null;
@@ -49,29 +56,46 @@ function isSafeAssetPath(pathname: string): boolean {
     .every((segment) => segment.length > 0 && segment !== "." && segment !== "..");
 }
 
-/** Only canonical CompreFi assets or the local assets namespace are permitted. */
-export function isSafeUsedStockImage(value: string): boolean {
-  if (typeof value !== "string" || /[\u0000-\u001f\u007f?#\\]/.test(value)) {
-    return false;
-  }
-
-  if (value.startsWith("/assets/")) return isSafeAssetPath(value);
+function canonicalAssetPath(value: string): string | null {
+  if (value.startsWith("/assets/")) return value;
 
   try {
     const url = new URL(value);
-    return (
+    if (
       url.protocol === "https:" &&
       url.hostname === "www.comprefi.com" &&
       url.port === "" &&
       url.username === "" &&
       url.password === "" &&
       !url.search &&
-      !url.hash &&
-      isSafeAssetPath(url.pathname)
-    );
+      !url.hash
+    ) {
+      return url.pathname;
+    }
   } catch {
+    return null;
+  }
+
+  return null;
+}
+
+/** Only canonical CompreFi assets or the local assets namespace are permitted. */
+export function isSafeUsedStockImage(value: string): boolean {
+  if (typeof value !== "string" || /[\u0000-\u001f\u007f?#\\]/.test(value)) {
     return false;
   }
+
+  const pathname = canonicalAssetPath(value);
+  return pathname !== null && isSafeAssetPath(pathname);
+}
+
+/** Blocks the three historical catalog renders in either supported URL form. */
+export function isKnownUsedStockIllustration(value: string): boolean {
+  const pathname = canonicalAssetPath(value);
+  return (
+    pathname !== null &&
+    (KNOWN_USED_STOCK_ILLUSTRATION_PATHS as readonly string[]).includes(pathname)
+  );
 }
 
 @ValidatorConstraint({ name: "safeUsedStockImage", async: false })
@@ -105,6 +129,33 @@ function IsSafeUsedStockImage(
   };
 }
 
+@ValidatorConstraint({ name: "notKnownUsedStockIllustration", async: false })
+class NotKnownUsedStockIllustrationConstraint
+  implements ValidatorConstraintInterface
+{
+  validate(value: unknown): boolean {
+    return typeof value === "string" && !isKnownUsedStockIllustration(value);
+  }
+
+  defaultMessage(): string {
+    return "Renders ilustrativos conhecidos não podem ser usados como foto de seminovo.";
+  }
+}
+
+function IsNotKnownUsedStockIllustration(
+  validationOptions?: ValidationOptions,
+): PropertyDecorator {
+  return (object: object, propertyName: string | symbol) => {
+    registerDecorator({
+      name: "notKnownUsedStockIllustration",
+      target: object.constructor,
+      propertyName: propertyName.toString(),
+      options: validationOptions,
+      validator: NotKnownUsedStockIllustrationConstraint,
+    });
+  };
+}
+
 @ValidatorConstraint({ name: "imei15Digits", async: false })
 class ImeiConstraint implements ValidatorConstraintInterface {
   validate(value: unknown): boolean {
@@ -128,31 +179,18 @@ function IsImei(validationOptions?: ValidationOptions): PropertyDecorator {
   };
 }
 
-/** Editable fields only. Lifecycle, actor, creation fingerprint and status are intentionally absent. */
+/**
+ * Editable unit fields. Catalog identity is server-resolved from catalogVariantId;
+ * model, storage and color snapshots deliberately are not client-editable.
+ */
 export class EditableUsedStockDto {
   @ValidateIf(supplied)
   @Transform(trim)
   @IsString()
   @IsNotEmpty()
-  @MaxLength(180)
+  @MaxLength(64)
   @Matches(USED_STOCK_TEXT)
-  model?: string;
-
-  @ValidateIf(supplied)
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(80)
-  @Matches(USED_STOCK_TEXT)
-  storage?: string;
-
-  @ValidateIf(supplied)
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(120)
-  @Matches(USED_STOCK_TEXT)
-  color?: string;
+  catalogVariantId?: string;
 
   @ValidateIf(suppliedAndNotNull)
   @IsInt()
@@ -173,6 +211,7 @@ export class EditableUsedStockDto {
   @IsString()
   @MaxLength(2_048)
   @IsSafeUsedStockImage(true)
+  @IsNotKnownUsedStockIllustration()
   image?: string;
 
   @ValidateIf(supplied)
@@ -184,6 +223,7 @@ export class EditableUsedStockDto {
   @IsString({ each: true })
   @MaxLength(2_048, { each: true })
   @IsSafeUsedStockImage(false, { each: true })
+  @IsNotKnownUsedStockIllustration({ each: true })
   realImages?: string[];
 
   @ValidateIf(supplied)
@@ -222,29 +262,12 @@ export class CreateUsedStockDto extends EditableUsedStockDto {
   @IsUUID("4")
   creationKey!: string;
 
-  @ValidateIf(() => true)
   @Transform(trim)
   @IsString()
   @IsNotEmpty()
-  @MaxLength(180)
+  @MaxLength(64)
   @Matches(USED_STOCK_TEXT)
-  declare model: string;
-
-  @ValidateIf(() => true)
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(80)
-  @Matches(USED_STOCK_TEXT)
-  declare storage: string;
-
-  @ValidateIf(() => true)
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(120)
-  @Matches(USED_STOCK_TEXT)
-  declare color: string;
+  declare catalogVariantId: string;
 }
 
 export class PatchUsedStockDto extends EditableUsedStockDto {

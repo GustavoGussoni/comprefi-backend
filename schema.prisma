@@ -116,8 +116,13 @@ model ProductVariant {
 
   isActive Boolean @default(true)
 
+  crmSku         String? @unique
+  crmProductId   String?
+  crmSkuRevision Int     @default(0)
+
   productGroup   ProductGroup @relation(fields: [productGroupId], references: [id], onDelete: Cascade)
   productGroupId String
+  usedStockUnits UsedStockUnit[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -250,6 +255,7 @@ model UsedStockUnit {
   revision            Int                @default(1)
   creationKey         String
   creationFingerprint String
+  catalogVariantId    String?
   model               String
   storage             String
   color               String
@@ -272,10 +278,12 @@ model UsedStockUnit {
   updatedAt           DateTime           @updatedAt
   createdById         String
   createdBy           User               @relation("UsedStockCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  catalogVariant      ProductVariant?    @relation(fields: [catalogVariantId], references: [id], onDelete: Restrict)
   history             UsedStockHistory[]
 
   @@unique([createdById, creationKey])
   @@index([status, createdAt])
+  @@index([catalogVariantId])
   @@map("used_stock_units")
 }
 
