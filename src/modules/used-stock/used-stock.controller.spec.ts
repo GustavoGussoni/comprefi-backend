@@ -25,6 +25,9 @@ const draft = {
   model: "iPhone 15",
   storage: "128GB",
   color: "Preto",
+  catalogVariantId: "variant-seminovo-1",
+  catalogLinked: true,
+  catalogActive: true,
   battery: null,
   details: "",
   image: "",
@@ -53,6 +56,7 @@ describe("UsedStockController HTTP", () => {
     getPublic: jest.fn(),
     listAdmin: jest.fn(),
     getAdmin: jest.fn(),
+    listCatalogVariants: jest.fn(),
     create: jest.fn(),
     patch: jest.fn(),
     activate: jest.fn(),
@@ -90,9 +94,9 @@ describe("UsedStockController HTTP", () => {
       color: "Preto",
       battery: 91,
       details: "Sem detalhes.",
-      image: "/assets/used-stock/iphone-15.jpg",
-      imageIsIllustrative: true,
-      realImages: [],
+      image: "/assets/test-fixtures/used-stock-fictional-photo.jpg",
+      imageIsIllustrative: false,
+      realImages: ["/assets/test-fixtures/used-stock-fictional-photo.jpg"],
       pixPrice: 2500,
       installments: 12,
       installmentPrice: 250,
@@ -118,18 +122,39 @@ describe("UsedStockController HTTP", () => {
       .compile();
     const protectedApp = module.createNestApplication();
     await protectedApp.init();
-    await request(protectedApp.getHttpServer()).get("/used-stock/admin").expect(403);
+    await request(protectedApp.getHttpServer()).get("/used-stock/admin/catalog-variants").expect(403);
     await protectedApp.close();
   });
 
-  it("encaminha criação validada com ator do JWT e responde 201", async () => {
+  it("expõe opções de variante autenticadas antes de :id, para ADMIN e SALES", async () => {
+    const options = [
+      {
+        id: "variant-seminovo-1",
+        productGroupId: "group-seminovo-1",
+        slug: "iphone-15-seminovo",
+        model: "iPhone 15",
+        storage: "128GB",
+        color: "Preto",
+        isActive: true,
+        groupIsActive: true,
+        unitCount: 2,
+      },
+    ];
+    service.listCatalogVariants.mockResolvedValue(options);
+    await request(app.getHttpServer())
+      .get("/used-stock/admin/catalog-variants")
+      .expect("Cache-Control", "no-store")
+      .expect(200, options);
+    expect(service.listCatalogVariants).toHaveBeenCalledTimes(1);
+    expect(service.getAdmin).not.toHaveBeenCalled();
+  });
+
+  it("encaminha criação validada pelo ID de variante com ator do JWT e responde 201", async () => {
     service.create.mockResolvedValue(draft);
     const body = {
       creationKey: "d0b9a9d1-1cd6-4ad0-9c7d-8026ea9be7c4",
-      model: "iPhone 15",
-      storage: "128GB",
-      color: "Preto",
-      image: "/assets/used-stock/iphone-15.jpg",
+      catalogVariantId: "variant-seminovo-1",
+      image: "/assets/test-fixtures/used-stock-fictional-photo.jpg",
       imei: "123456789012345",
     };
     await request(app.getHttpServer()).post("/used-stock/admin").send(body).expect(201, draft);
@@ -139,21 +164,19 @@ describe("UsedStockController HTTP", () => {
     );
   });
 
-  it("rejeita campos de controle e URLs de imagem inseguras antes do serviço", async () => {
+  it("rejeita controles, identidade client-side, URL insegura e render conhecido antes do serviço", async () => {
     const valid = {
       creationKey: "d0b9a9d1-1cd6-4ad0-9c7d-8026ea9be7c4",
-      model: "iPhone 15",
-      storage: "128GB",
-      color: "Preto",
+      catalogVariantId: "variant-seminovo-1",
     };
-    await request(app.getHttpServer())
-      .post("/used-stock/admin")
-      .send({ ...valid, status: "available" })
-      .expect(400);
-    await request(app.getHttpServer())
-      .post("/used-stock/admin")
-      .send({ ...valid, image: "javascript:alert(1)" })
-      .expect(400);
+    for (const body of [
+      { ...valid, status: "available" },
+      { ...valid, model: "iPhone injetado" },
+      { ...valid, image: "javascript:alert(1)" },
+      { ...valid, image: "/assets/used-stock/iphone12-pro-max-azul.jpg" },
+    ]) {
+      await request(app.getHttpServer()).post("/used-stock/admin").send(body).expect(400);
+    }
     expect(service.create).not.toHaveBeenCalled();
   });
 

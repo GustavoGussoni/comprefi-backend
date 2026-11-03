@@ -9,6 +9,7 @@ import { validate } from "class-validator";
 import {
   Prisma,
   UsedStockStatus,
+  type ProductVariant,
   type UsedStockHistory,
   type UsedStockUnit,
 } from "@prisma/client";
@@ -18,11 +19,14 @@ import {
   ActivateUsedStockDto,
   CreateUsedStockDto,
   EditableUsedStockDto,
+  isKnownUsedStockIllustration,
+  isSafeUsedStockImage,
   PatchUsedStockDto,
   TransitionUsedStockDto,
 } from "./used-stock.dto";
 import {
   UsedStockAdminResponseDto,
+  UsedStockCatalogVariantResponseDto,
   UsedStockPublicResponseDto,
   type UsedStockStatusResponse,
 } from "./used-stock.responses";
@@ -31,15 +35,25 @@ export type UsedStockActor = {
   id: string;
 };
 
+const USED_STOCK_CATEGORY = "iphones-seminovos";
+
+type CatalogGroup = {
+  id: string;
+  slug: string;
+  model: string;
+  category: string;
+  isActive: boolean;
+};
+type CatalogVariant = ProductVariant & { productGroup: CatalogGroup };
 type HistoryWithActor = UsedStockHistory & { actor: { id: string; name: string } };
-type UnitWithHistory = UsedStockUnit & { history: HistoryWithActor[] };
+type UnitWithCatalog = UsedStockUnit & { catalogVariant: CatalogVariant | null };
+type UnitWithHistory = UnitWithCatalog & { history: HistoryWithActor[] };
 type EditableInput = Omit<CreateUsedStockDto, "creationKey">;
 type PrismaTransaction = Prisma.TransactionClient;
+type PrismaClient = PrismaService | PrismaTransaction;
 
 const EDITABLE_FIELDS = [
-  "model",
-  "storage",
-  "color",
+  "catalogVariantId",
   "battery",
   "details",
   "image",
@@ -57,11 +71,28 @@ const PATCH_FIELDS = ["expectedRevision", ...EDITABLE_FIELDS] as const;
 const ACTIVATE_FIELDS = ["expectedRevision", "received", "checked"] as const;
 const TRANSITION_FIELDS = ["expectedRevision"] as const;
 
+const CATALOG_VARIANT_INCLUDE = {
+  productGroup: {
+    select: {
+      id: true,
+      slug: true,
+      model: true,
+      category: true,
+      isActive: true,
+    },
+  },
+} as const;
+
 const ADMIN_INCLUDE = {
+  catalogVariant: { include: CATALOG_VARIANT_INCLUDE },
   history: {
     orderBy: { at: "asc" as const },
     include: { actor: { select: { id: true, name: true } } },
   },
+} as const;
+
+const PUBLIC_INCLUDE = {
+  catalogVariant: { include: CATALOG_VARIANT_INCLUDE },
 } as const;
 
 function stableJson(value: unknown): string {
@@ -96,6 +127,11 @@ function own<T extends object>(object: T, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+/** Removes the catalog's display-only seminovo suffix without altering its source record. */
+function displayModel(model: string): string {
+  return model.replace(/\s*\(Seminovo\)\s*$/i, "").trim();
+}
+
 /**
  * Persistent inventory for individual physical used devices, deliberately
  * isolated from all legacy flows and external transports.
@@ -106,17 +142,44 @@ export class UsedStockService {
 
   async listPublic(): Promise<UsedStockPublicResponseDto[]> {
     const units = await this.prisma.usedStockUnit.findMany({
-      where: { status: UsedStockStatus.available },
+      where: {
+        status: UsedStockStatus.available,
+        imageIsIllustrative: false,
+        realImages: { isEmpty: false },
+        catalogVariant: {
+          is: {
+            isActive: true,
+            productGroup: { is: { category: USED_STOCK_CATEGORY, isActive: true } },
+          },
+        },
+      },
+      include: PUBLIC_INCLUDE,
       orderBy: [{ activatedAt: "desc" }, { createdAt: "desc" }],
     });
-    return units.map((unit) => this.publicResponse(unit));
+    return units
+      .filter((unit) => this.isPubliclyAvailable(unit))
+      .map((unit) => this.publicResponse(unit));
   }
 
   async getPublic(id: string): Promise<UsedStockPublicResponseDto> {
     const unit = await this.prisma.usedStockUnit.findFirst({
-      where: { id, status: UsedStockStatus.available },
+      where: {
+        id,
+        status: UsedStockStatus.available,
+        imageIsIllustrative: false,
+        realImages: { isEmpty: false },
+        catalogVariant: {
+          is: {
+            isActive: true,
+            productGroup: { is: { category: USED_STOCK_CATEGORY, isActive: true } },
+          },
+        },
+      },
+      include: PUBLIC_INCLUDE,
     });
-    if (!unit) throw new NotFoundException("Unidade de seminovo não encontrada.");
+    if (!unit || !this.isPubliclyAvailable(unit)) {
+      throw new NotFoundException("Unidade de seminovo não encontrada.");
+    }
     return this.publicResponse(unit);
   }
 
@@ -132,6 +195,35 @@ export class UsedStockService {
     const unit = await this.findAdmin(this.prisma, id);
     if (!unit) throw new NotFoundException("Unidade de seminovo não encontrada.");
     return this.adminResponse(unit);
+  }
+
+  async listCatalogVariants(): Promise<UsedStockCatalogVariantResponseDto[]> {
+    const variants = await this.prisma.productVariant.findMany({
+      where: { productGroup: { is: { category: USED_STOCK_CATEGORY } } },
+      include: {
+        productGroup: {
+          select: { id: true, slug: true, model: true, category: true, isActive: true },
+        },
+        _count: { select: { usedStockUnits: true } },
+      },
+      orderBy: [
+        { productGroup: { sortOrder: "asc" } },
+        { storage: "asc" },
+        { color: "asc" },
+      ],
+    });
+
+    return variants.map((variant) => ({
+      id: variant.id,
+      productGroupId: variant.productGroupId,
+      slug: variant.productGroup.slug,
+      model: displayModel(variant.productGroup.model),
+      storage: variant.storage,
+      color: variant.color,
+      isActive: variant.isActive,
+      groupIsActive: variant.productGroup.isActive,
+      unitCount: variant._count.usedStockUnits,
+    }));
   }
 
   async create(
@@ -155,13 +247,14 @@ export class UsedStockService {
         });
         if (existing) return this.existingCreation(existing, creationFingerprint);
 
+        const catalogVariant = await this.requiredCatalogVariant(tx, dto.catalogVariantId);
+        const identity = this.identity(catalogVariant);
         const created = await tx.usedStockUnit.create({
           data: {
             creationKey: dto.creationKey,
             creationFingerprint,
-            model: editable.model,
-            storage: editable.storage,
-            color: editable.color,
+            catalogVariantId: catalogVariant.id,
+            ...identity,
             battery: editable.battery ?? null,
             details: editable.details ?? "",
             image: editable.image ?? "",
@@ -216,11 +309,16 @@ export class UsedStockService {
           );
         }
 
-        const data: Prisma.UsedStockUnitUpdateManyMutationInput = {
+        const data: Prisma.UsedStockUnitUncheckedUpdateManyInput = {
           revision: { increment: 1 },
         };
+        if (own(editable, "catalogVariantId")) {
+          const catalogVariant = await this.requiredCatalogVariant(tx, editable.catalogVariantId!);
+          data.catalogVariantId = catalogVariant.id;
+          Object.assign(data, this.identity(catalogVariant));
+        }
         for (const field of EDITABLE_FIELDS) {
-          if (!own(editable, field)) continue;
+          if (field === "catalogVariantId" || !own(editable, field)) continue;
           const value = editable[field];
           if (field === "pixPrice" || field === "installmentPrice") {
             data[field] = new Prisma.Decimal(value as number);
@@ -267,7 +365,10 @@ export class UsedStockService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const current = await tx.usedStockUnit.findUnique({ where: { id } });
+      const current = await tx.usedStockUnit.findUnique({
+        where: { id },
+        include: { catalogVariant: { include: CATALOG_VARIANT_INCLUDE } },
+      });
       if (!current) throw new NotFoundException("Unidade de seminovo não encontrada.");
       if (current.status !== UsedStockStatus.draft) {
         throw new ConflictException(
@@ -376,7 +477,7 @@ export class UsedStockService {
   }
 
   private async findAdmin(
-    client: PrismaService | PrismaTransaction,
+    client: PrismaClient,
     id?: string,
     createdById?: string,
     creationKey?: string,
@@ -393,6 +494,28 @@ export class UsedStockService {
     return null;
   }
 
+  private async requiredCatalogVariant(
+    client: PrismaClient,
+    id: string,
+  ): Promise<CatalogVariant> {
+    const variant = await client.productVariant.findUnique({
+      where: { id },
+      include: CATALOG_VARIANT_INCLUDE,
+    });
+    if (!variant || variant.productGroup.category !== USED_STOCK_CATEGORY) {
+      throw new BadRequestException("A variante informada não pertence ao catálogo de iPhones seminovos.");
+    }
+    return variant;
+  }
+
+  private identity(variant: CatalogVariant): Pick<UsedStockUnit, "model" | "storage" | "color"> {
+    return {
+      model: displayModel(variant.productGroup.model),
+      storage: variant.storage,
+      color: variant.color,
+    };
+  }
+
   private editable(dto: EditableUsedStockDto): Partial<EditableInput> {
     const output: Partial<EditableInput> = {};
     for (const field of EDITABLE_FIELDS) {
@@ -405,21 +528,58 @@ export class UsedStockService {
     return typeof value === "string" && value.trim() ? value.trim() : null;
   }
 
-  private assertPublishable(unit: UsedStockUnit): void {
+  private isCatalogActive(unit: UnitWithCatalog): boolean {
+    const variant = unit.catalogVariant;
+    return Boolean(
+      variant &&
+        variant.isActive &&
+        variant.productGroup.isActive &&
+        variant.productGroup.category === USED_STOCK_CATEGORY,
+    );
+  }
+
+  private hasRealImages(unit: UsedStockUnit): boolean {
+    return (
+      unit.imageIsIllustrative === false &&
+      unit.realImages.length >= 1 &&
+      unit.realImages.every(
+        (image) => isSafeUsedStockImage(image) && !isKnownUsedStockIllustration(image),
+      ) &&
+      isSafeUsedStockImage(unit.image) &&
+      !isKnownUsedStockIllustration(unit.image) &&
+      unit.realImages.includes(unit.image)
+    );
+  }
+
+  private isPubliclyAvailable(unit: UnitWithCatalog): boolean {
+    return (
+      unit.status === UsedStockStatus.available &&
+      this.isCatalogActive(unit) &&
+      this.hasRealImages(unit)
+    );
+  }
+
+  private assertPublishable(unit: UnitWithCatalog): void {
+    if (!this.isCatalogActive(unit)) {
+      throw new BadRequestException(
+        "Para ativar, vincule uma variante ativa do catálogo de iPhones seminovos.",
+      );
+    }
+    if (!this.hasRealImages(unit)) {
+      throw new BadRequestException(
+        "Para ativar, informe foto(s) reais válidas, sem render ilustrativo, e use uma delas como capa.",
+      );
+    }
     if (
-      !unit.model.trim() ||
-      !unit.storage.trim() ||
-      !unit.color.trim() ||
       !unit.battery ||
       !unit.details.trim() ||
-      !unit.image.trim() ||
       Number(unit.pixPrice) <= 0 ||
       unit.installments < 1 ||
       unit.installments > 24 ||
       Number(unit.installmentPrice) <= 0
     ) {
       throw new BadRequestException(
-        "Para ativar, informe modelo, capacidade, cor, bateria, estado, imagem e valores positivos.",
+        "Para ativar, informe bateria, estado e valores positivos da unidade.",
       );
     }
   }
@@ -455,12 +615,17 @@ export class UsedStockService {
   }
 
   private adminResponse(unit: UnitWithHistory): UsedStockAdminResponseDto {
+    const linked = unit.catalogVariant !== null;
+    const identity = linked ? this.identity(unit.catalogVariant) : unit;
     return {
       id: unit.id,
       revision: unit.revision,
-      model: unit.model,
-      storage: unit.storage,
-      color: unit.color,
+      model: identity.model,
+      storage: identity.storage,
+      color: identity.color,
+      catalogVariantId: unit.catalogVariantId,
+      catalogLinked: linked,
+      catalogActive: this.isCatalogActive(unit),
       battery: unit.battery,
       details: unit.details,
       image: unit.image,
@@ -489,12 +654,13 @@ export class UsedStockService {
     };
   }
 
-  private publicResponse(unit: UsedStockUnit): UsedStockPublicResponseDto {
+  private publicResponse(unit: UnitWithCatalog): UsedStockPublicResponseDto {
+    const identity = this.identity(unit.catalogVariant!);
     return {
       id: unit.id,
-      model: unit.model,
-      storage: unit.storage,
-      color: unit.color,
+      model: identity.model,
+      storage: identity.storage,
+      color: identity.color,
       battery: unit.battery,
       details: unit.details,
       image: unit.image,

@@ -17,11 +17,17 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { RolesGuard } from "../auth/roles.guard";
 import { PrismaService } from "../../database/prisma.service";
+import { CatalogCrmSkuService } from "./catalog-crm-sku.service";
+import { catalogCrmSkuResponse, CATALOG_ADMIN_VARIANT_SELECT } from "./catalog-crm-sku.contract";
+import { CurrentCatalogCrmAdminGuard } from "./current-catalog-crm-admin.guard";
 
 @ApiTags("Catalog")
 @Controller("catalog")
 export class CatalogController {
-constructor(private readonly prisma: PrismaService) {}
+constructor(
+  private readonly prisma: PrismaService,
+  private readonly crmSkuService: CatalogCrmSkuService,
+) {}
 
 // ============================================
 // Endpoints Públicos
@@ -152,8 +158,18 @@ async getProductsFlat() {
 // Endpoints Admin (protegidos)
 // ============================================
 
+@Put("admin/variants/:id/crm-sku")
+@UseGuards(JwtAuthGuard, RolesGuard, CurrentCatalogCrmAdminGuard)
+@Roles(UserRole.ADMIN)
+@ApiBearerAuth()
+@ApiOperation({ summary: "Atualizar somente o SKU do CRM de uma variante" })
+async updateVariantCrmSku(@Param("id") id: string, @Body() body: unknown) {
+  return this.crmSkuService.update(id, body);
+}
+
 @Get("admin/products")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN, UserRole.SALES)
 @ApiBearerAuth()
 @ApiOperation({ summary: "Listar todos os produtos (admin)" })
 async getAllProductsAdmin(
@@ -168,6 +184,7 @@ async getAllProductsAdmin(
     where,
     include: {
       variants: {
+        select: CATALOG_ADMIN_VARIANT_SELECT,
         orderBy: [{ storage: "asc" }, { color: "asc" }],
       },
     },
@@ -188,7 +205,7 @@ async getAllProductsAdmin(
     sortOrder: group.sortOrder,
     variantCount: group.variants.length,
     variants: group.variants.map((v) => ({
-      id: v.id,
+      ...catalogCrmSkuResponse(v),
       storage: v.storage,
       color: v.color,
       originalPrice: v.originalPrice,
@@ -230,6 +247,7 @@ async updateVariants(
 
   for (const variant of body.variants) {
     const result = await this.prisma.productVariant.upsert({
+      select: CATALOG_ADMIN_VARIANT_SELECT,
       where: {
         productGroupId_storage_color: {
           productGroupId: group.id,
@@ -361,7 +379,7 @@ async createProduct(
           }
         : undefined,
     },
-    include: { variants: true },
+    include: { variants: { select: CATALOG_ADMIN_VARIANT_SELECT } },
   });
 
   return group;

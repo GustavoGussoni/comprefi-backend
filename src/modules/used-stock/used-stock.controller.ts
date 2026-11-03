@@ -51,6 +51,14 @@ export class UsedStockController {
     return this.usedStock.listAdmin();
   }
 
+  @Get("admin/catalog-variants")
+  @Header("Cache-Control", NO_STORE)
+  @UseGuards(JwtAuthGuard, RolesGuard, CurrentUsedStockUserGuard)
+  @Roles(UserRole.ADMIN, UserRole.SALES)
+  listCatalogVariants() {
+    return this.usedStock.listCatalogVariants();
+  }
+
   @Post("admin")
   @Header("Cache-Control", NO_STORE)
   @UseGuards(JwtAuthGuard, RolesGuard, CurrentUsedStockUserGuard)

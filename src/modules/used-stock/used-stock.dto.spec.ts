@@ -4,6 +4,7 @@ import {
   ActivateUsedStockDto,
   CreateUsedStockDto,
   PatchUsedStockDto,
+  isKnownUsedStockIllustration,
   isSafeUsedStockImage,
 } from "./used-stock.dto";
 
@@ -14,51 +15,70 @@ async function valid(dto: object) {
 describe("used-stock DTO", () => {
   const required = {
     creationKey: "d0b9a9d1-1cd6-4ad0-9c7d-8026ea9be7c4",
-    model: "iPhone 15",
-    storage: "128GB",
-    color: "Preto",
+    catalogVariantId: "variant-seminovo-1",
   };
 
   it("aceita somente os dois namespaces aprovados para imagens", () => {
-    expect(isSafeUsedStockImage("/assets/used-stock/iphone-15.jpg")).toBe(true);
-    expect(isSafeUsedStockImage("https://www.comprefi.com/assets/used-stock/iphone-15.jpg")).toBe(true);
+    expect(isSafeUsedStockImage("/assets/test-fixtures/used-stock-fictional-photo.jpg")).toBe(true);
+    expect(
+      isSafeUsedStockImage("https://www.comprefi.com/assets/test-fixtures/used-stock-fictional-photo.jpg"),
+    ).toBe(true);
     for (const image of [
       "/assets/../private.jpg",
-      "/assets/used-stock/a.jpg?x=1",
+      "/assets/test-fixtures/a.jpg?x=1",
       "https://www.comprefi.com/assets/a.jpg#fragment",
       "http://www.comprefi.com/assets/a.jpg",
-      "https://evil.example/assets/a.jpg",
+      "https://evil.example/assets/device.jpg",
       "javascript:alert(1)",
     ]) {
       expect(isSafeUsedStockImage(image)).toBe(false);
     }
   });
 
-  it("exige strings identificadoras no create, limita dinheiro a duas casas e bloqueia controles", async () => {
+  it("bloqueia os três renders históricos em caminhos locais e canônicos", () => {
+    expect(isKnownUsedStockIllustration("/assets/used-stock/iphone16-pro-max-natural.jpg")).toBe(true);
+    expect(
+      isKnownUsedStockIllustration(
+        "https://www.comprefi.com/assets/used-stock/iphone12-pro-max-azul.jpg",
+      ),
+    ).toBe(true);
+    expect(isKnownUsedStockIllustration("/assets/test-fixtures/used-stock-fictional-photo.jpg")).toBe(false);
+  });
+
+  it("exige somente a variante no create, limita dinheiro e bloqueia controles/identidade injetada", async () => {
     expect(await valid(plainToInstance(CreateUsedStockDto, required))).toHaveLength(0);
-    expect(await valid(plainToInstance(CreateUsedStockDto, { ...required, model: "" }))).not.toHaveLength(0);
+    expect(
+      await valid(plainToInstance(CreateUsedStockDto, { ...required, catalogVariantId: "" })),
+    ).not.toHaveLength(0);
     expect(
       await valid(plainToInstance(CreateUsedStockDto, { ...required, pixPrice: 1.999 })),
     ).not.toHaveLength(0);
-    expect(
-      await valid(plainToInstance(CreateUsedStockDto, { ...required, status: "available" })),
-    ).not.toHaveLength(0);
-  });
-
-  it("não herda a opcionalidade do patch para campos obrigatórios do create", async () => {
-    for (const field of ["model", "storage", "color"] as const) {
-      const absent: Partial<typeof required> = { ...required };
-      delete absent[field];
-      expect(await valid(plainToInstance(CreateUsedStockDto, absent))).not.toHaveLength(0);
-      expect(await valid(plainToInstance(CreateUsedStockDto, { ...required, [field]: null }))).not.toHaveLength(0);
+    for (const field of ["status", "model", "storage", "color"] as const) {
+      expect(
+        await valid(plainToInstance(CreateUsedStockDto, { ...required, [field]: "injetado" })),
+      ).not.toHaveLength(0);
     }
   });
 
   it("recusa null em campos não anuláveis, mas permite limpar bateria e IMEI do rascunho", async () => {
-    for (const field of ["model", "storage", "color", "details", "image", "realImages", "pixPrice", "installments", "installmentPrice", "imageIsIllustrative", "internalNotes"]) {
-      expect(await valid(plainToInstance(PatchUsedStockDto, { expectedRevision: 1, [field]: null }))).not.toHaveLength(0);
+    for (const field of [
+      "catalogVariantId",
+      "details",
+      "image",
+      "realImages",
+      "pixPrice",
+      "installments",
+      "installmentPrice",
+      "imageIsIllustrative",
+      "internalNotes",
+    ]) {
+      expect(
+        await valid(plainToInstance(PatchUsedStockDto, { expectedRevision: 1, [field]: null })),
+      ).not.toHaveLength(0);
     }
-    expect(await valid(plainToInstance(PatchUsedStockDto, { expectedRevision: 1, battery: null, imei: null }))).toHaveLength(0);
+    expect(
+      await valid(plainToInstance(PatchUsedStockDto, { expectedRevision: 1, battery: null, imei: null })),
+    ).toHaveLength(0);
   });
 
   it("converte IMEI em branco para null e restringe IMEI preenchido a 15 dígitos", async () => {
@@ -75,12 +95,12 @@ describe("used-stock DTO", () => {
     ).toHaveLength(0);
   });
 
-  it("valida cada URL de realImages pela mesma política segura", async () => {
+  it("valida fotos reais pela política segura e bloqueia render conhecido", async () => {
     expect(
       await valid(
         plainToInstance(PatchUsedStockDto, {
           expectedRevision: 1,
-          realImages: ["/assets/used-stock/iphone-15-real.jpg"],
+          realImages: ["/assets/test-fixtures/used-stock-fictional-photo.jpg"],
         }),
       ),
     ).toHaveLength(0);
@@ -89,6 +109,14 @@ describe("used-stock DTO", () => {
         plainToInstance(PatchUsedStockDto, {
           expectedRevision: 1,
           realImages: ["https://evil.example/assets/device.jpg"],
+        }),
+      ),
+    ).not.toHaveLength(0);
+    expect(
+      await valid(
+        plainToInstance(PatchUsedStockDto, {
+          expectedRevision: 1,
+          image: "/assets/used-stock/iphone16-pro-max-preto.jpg",
         }),
       ),
     ).not.toHaveLength(0);
