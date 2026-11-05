@@ -27,7 +27,8 @@
     "prisma:seed-admin": "ts-node prisma/seed-admin-users.ts",
     "prisma:promote-admin": "ts-node prisma/promote-admin-role.ts",
     "prisma:seed-staging": "ts-node prisma/seed-staging.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:ficha": "jest --runInBand --testPathPatterns=modules/sale-sheet"
   },
   "dependencies": {
     "@eslint/config-array": "^0.21.0",
@@ -49,7 +50,8 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "jspdf": "^4.2.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.7",
