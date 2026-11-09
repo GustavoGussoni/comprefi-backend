@@ -1,3 +1,4 @@
+import { SaleSheetModule } from "./modules/sale-sheet/sale-sheet.module";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
@@ -23,6 +24,7 @@ import { UsedStockModule } from "./modules/used-stock/used-stock.module";
     TradeModule,
     CatalogModule,
     UsedStockModule,
+    ...(process.env.FICHA_VENDA_ENABLED === "true" ? [SaleSheetModule] : []),
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

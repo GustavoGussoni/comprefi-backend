@@ -33,6 +33,7 @@ model User {
   password         String
   role             UserRole           @default(SALES)
   products         Product[]
+  saleSheets       SaleSheet[]
   usedStockCreated UsedStockUnit[]    @relation("UsedStockCreator")
   usedStockActions UsedStockHistory[] @relation("UsedStockActor")
 
@@ -298,4 +299,48 @@ model UsedStockHistory {
 
   @@index([unitId, at])
   @@map("used_stock_history")
+}
+
+// Isolated sale sheet V1: private PostgreSQL JSONB snapshots and bounded PDF bytes.
+model SaleSheet {
+  id String @id
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  ownerId String
+  creationKeyHash String?
+  creationBodyHash String?
+  tokenHash String @unique
+  revision Int
+  pdfStatus String
+  crmStatus String
+  linkExpiresAt DateTime
+  snapshot Json @db.JsonB
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  documents SaleSheetDocument[]
+  events SaleSheetEvent[]
+  @@unique([ownerId, creationKeyHash])
+  @@index([ownerId, createdAt])
+  @@index([pdfStatus, crmStatus])
+  @@map("sale_sheets")
+}
+model SaleSheetDocument {
+  id String @id
+  sheetId String
+  revision Int
+  bytes Bytes
+  sha256 String
+  createdAt DateTime @default(now())
+  sheet SaleSheet @relation(fields: [sheetId], references: [id], onDelete: Restrict)
+  @@unique([sheetId, revision])
+  @@map("sale_sheet_documents")
+}
+model SaleSheetEvent {
+  id String @id
+  sheetId String
+  revision Int
+  action String
+  at DateTime @default(now())
+  sheet SaleSheet @relation(fields: [sheetId], references: [id], onDelete: Restrict)
+  @@index([sheetId, at])
+  @@map("sale_sheet_events")
 }
