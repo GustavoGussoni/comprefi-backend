@@ -5,6 +5,7 @@ import {
   Headers,
   HttpCode,
   Param,
+  Patch,
   Post,
   Req,
   Res,
@@ -69,6 +70,52 @@ export class SaleSheetController {
   @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
   getAdmin(@Req() request: AuthRequest, @Param("id") id: string) {
     return this.sheets.getAdmin(request.user, id);
+  }
+
+  // Service validation intentionally owns these bodies (including PT-BR errors),
+  // so a global ValidationPipe cannot emit English decorator messages first.
+  @Patch("admin/:id")
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  edit(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") key: string,
+  ) {
+    return this.sheets.edit(request.user, id, body, key);
+  }
+
+  @Post("admin/:id/cancel")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  cancel(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sheets.cancel(request.user, id, body);
+  }
+
+  @Post("admin/:id/archive")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  archive(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sheets.archive(request.user, id, body);
+  }
+
+  @Post("admin/:id/unarchive")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  unarchive(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sheets.unarchive(request.user, id, body);
   }
 
   @Post("admin/:id/link")

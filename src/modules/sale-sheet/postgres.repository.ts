@@ -77,11 +77,11 @@ export class PostgresSheetRepository implements SheetRepository {
         for (const sheet of sheets) {
           const encoded = JSON.stringify(sheet);
           if (before.get(sheet.id) === encoded) continue;
+          const previous = before.has(sheet.id)
+            ? (JSON.parse(before.get(sheet.id)!) as StoredSheet)
+            : undefined;
           const data = {
-            ownerId: sheet.createdBy.id,
             tokenHash: sheet.tokenHash,
-            creationKeyHash: sheet.creationKeyHash,
-            creationBodyHash: sheet.creationBodyHash,
             revision: sheet.revision,
             pdfStatus: sheet.pdf.status,
             crmStatus: sheet.crm.status,
@@ -95,17 +95,31 @@ export class PostgresSheetRepository implements SheetRepository {
               data: {
                 id: sheet.id,
                 ...data,
+                ownerId: sheet.createdBy.id,
+                creationKeyHash: sheet.creationKeyHash,
+                creationBodyHash: sheet.creationBodyHash,
                 createdAt: new Date(sheet.createdAt),
               },
             });
+          // Only operation name and versions, never token/key hashes, terms or PII.
+          const operation = !previous
+            ? "created"
+            : (sheet.editOperations?.length || 0) >
+                (previous.editOperations?.length || 0)
+              ? `edit:expected=${previous.revision};result=${sheet.revision}`
+              : !previous.revoked && sheet.revoked
+                ? `cancel:expected=${previous.revision};result=${sheet.revision}`
+                : !previous.archivedAt && sheet.archivedAt
+                  ? `archive:revision=${sheet.revision}`
+                  : previous.archivedAt && !sheet.archivedAt
+                    ? `unarchive:revision=${sheet.revision}`
+                    : `state:pdf=${sheet.pdf.status};crm=${sheet.crm.status};revoked=${sheet.revoked}`;
           await tx.saleSheetEvent.create({
             data: {
               id: randomUUID(),
               sheetId: sheet.id,
               revision: sheet.revision,
-              action: before.has(sheet.id)
-                ? `state:pdf=${sheet.pdf.status};crm=${sheet.crm.status};revoked=${sheet.revoked}`
-                : "created",
+              action: operation,
             },
           });
         }

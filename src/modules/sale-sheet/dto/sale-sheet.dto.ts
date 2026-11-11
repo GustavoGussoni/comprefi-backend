@@ -5,8 +5,10 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsDefined,
   IsIn,
   IsInt,
+  IsISO8601,
   IsNumber,
   IsOptional,
   IsString,
@@ -198,6 +200,29 @@ export class SheetTermsDto {
   @MaxLength(2000)
   @Matches(TEXT)
   notes!: string;
+}
+
+export class SheetRevisionDto {
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  revision!: number;
+}
+
+export class UnarchiveSaleSheetDto extends SheetRevisionDto {
+  // Match the exact UTC/millisecond timestamp issued by the snapshot; do not trim.
+  @IsDefined()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d\.\d{3}Z$/)
+  @IsISO8601({ strict: true, strictSeparator: true })
+  archivedAt!: string;
+}
+
+export class EditSaleSheetDto extends SheetRevisionDto {
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => SheetTermsDto)
+  terms!: SheetTermsDto;
 }
 
 export class SheetCustomerDto implements SheetCustomer {
