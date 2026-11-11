@@ -87,6 +87,9 @@ export type SheetSnapshot = SheetTerms & {
   contractTemplateVersion?: string;
   linkExpiresAt: string;
   revoked: boolean;
+  /** Admin-route projection only, never included in PublicSheet or CRM JSON. */
+  archivedAt?: string;
+  archivedBy?: string;
   crm: SheetTask;
   pdf: SheetTask;
   crmAttachment: SheetTask;
@@ -96,6 +99,18 @@ export type StoredSheet = SheetSnapshot & {
   tokenHash: string;
   creationKeyHash?: string;
   creationBodyHash?: string;
+  /** Separate from creation; no raw key, token, terms or customer values. */
+  editOperations?: Array<{
+    actorId: string;
+    keyHash: string;
+    bodyHash: string;
+    resultVersion: number;
+  }>;
+  cancelOperation?: {
+    actorId: string;
+    expectedRevision: number;
+    resultVersion: number;
+  };
   contractMode?: "demonstration" | "commercial";
   crmPayloadVersion?: string;
   submissionKeyHash?: string;

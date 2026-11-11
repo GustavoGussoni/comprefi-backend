@@ -44,9 +44,12 @@ import {
   assertDeadlineNotPast,
   assertIdempotencyKey,
   assertMoney,
+  EditSaleSheetDto,
   SheetCustomerDto,
+  SheetRevisionDto,
   SheetTermsDto,
   SubmitPublicSheetDto,
+  UnarchiveSaleSheetDto,
   validateInput,
 } from "./dto/sale-sheet.dto";
 import { MAX_CONTRACT_BYTES } from "./postgres.repository";
@@ -238,6 +241,158 @@ export class SaleSheetService implements OnModuleInit {
 
   async getAdmin(actor: SheetActor, id: string): Promise<SheetSnapshot> {
     return this.toSnapshot(await this.findOwned(actor, id));
+  }
+
+  async edit(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+    idempotencyKeyHeader: unknown,
+  ): Promise<{ sheet: SheetSnapshot; token?: string; replayed: boolean }> {
+    this.assertSheetActor(actor);
+    const keyHash = sha256(assertIdempotencyKey(idempotencyKeyHeader));
+    const dto = await this.validateMutation(EditSaleSheetDto, body);
+    const bodyHash = sha256(stableJson(dto));
+    const replay = (sheet: StoredSheet) => {
+      const operation = sheet.editOperations?.find(
+        (entry) => entry.actorId === actor.id && entry.keyHash === keyHash,
+      );
+      if (!operation) return undefined;
+      if (operation.bodyHash !== bodyHash)
+        throw new ConflictException(
+          "Chave de edição reutilizada com dados diferentes.",
+        );
+      // Return the latest authorized snapshot, not an obsolete contractual version.
+      // Neither the raw token nor a historical customer snapshot is stored here.
+      return { sheet: this.toSnapshot(sheet), replayed: true };
+    };
+    const current = await this.findOwned(actor, id);
+    const previous = replay(current);
+    if (previous) return previous;
+    this.assertRevision(current, dto.revision);
+    this.assertEditable(current);
+    // Catalog normalization is the same as creation; no CRM or renderer runs here.
+    let normalized: SheetTerms;
+    try {
+      normalized = await this.normalizeTerms(dto.terms);
+    } catch (error) {
+      if (error instanceof BadRequestException)
+        throw new BadRequestException(
+          "Revise os itens, valores, pagamento, troca e prazo de entrega.",
+        );
+      throw error;
+    }
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      const duplicate = replay(sheet);
+      if (duplicate) return duplicate;
+      this.assertRevision(sheet, dto.revision);
+      this.assertEditable(sheet);
+      if (normalized.delivery === "date")
+        assertDeadlineNotPast(
+          normalized.deadline,
+          "O prazo de entrega venceu.",
+        );
+      const token = randomBytes(32).toString("base64url");
+      Object.assign(sheet, normalized);
+      sheet.tokenHash = sha256(token);
+      sheet.linkExpiresAt = new Date(Date.now() + 7 * DAY_MS).toISOString();
+      sheet.revision += 1;
+      (sheet.editOperations ||= []).push({
+        actorId: actor.id,
+        keyHash,
+        bodyHash,
+        resultVersion: sheet.revision,
+      });
+      return { sheet: this.toSnapshot(sheet), token, replayed: false };
+    });
+  }
+
+  async cancel(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+  ): Promise<SheetSnapshot> {
+    this.assertSheetActor(actor);
+    const dto = await this.validateMutation(SheetRevisionDto, body);
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      if (sheet.submittedAt)
+        throw new ConflictException(
+          "Esta ficha já recebeu o cadastro e não pode ser cancelada.",
+        );
+      // A lost cancellation response may be retried with its original revision.
+      // Unrelated stale revisions still conflict, including after an intervening edit.
+      if (
+        sheet.revoked &&
+        (dto.revision === sheet.revision ||
+          (sheet.cancelOperation?.expectedRevision === dto.revision &&
+            sheet.cancelOperation.resultVersion === sheet.revision))
+      )
+        return this.toSnapshot(sheet);
+      this.assertRevision(sheet, dto.revision);
+      this.assertEditable(sheet);
+      sheet.revoked = true;
+      sheet.revision += 1;
+      sheet.cancelOperation = {
+        actorId: actor.id,
+        expectedRevision: dto.revision,
+        resultVersion: sheet.revision,
+      };
+      return this.toSnapshot(sheet);
+    });
+  }
+
+  async archive(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+  ): Promise<SheetSnapshot> {
+    this.assertSheetActor(actor);
+    const dto = await this.validateMutation(SheetRevisionDto, body);
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      this.assertRevision(sheet, dto.revision);
+      if (sheet.archivedAt) return this.toSnapshot(sheet);
+      if (!sheet.submittedAt && !sheet.revoked)
+        throw new ConflictException(
+          "Só é possível arquivar fichas recebidas ou canceladas.",
+        );
+      // Metadata only: keep the submitted revision/document and frozen CRM payload.
+      sheet.archivedAt = new Date().toISOString();
+      sheet.archivedBy = actor.id;
+      return this.toSnapshot(sheet);
+    });
+  }
+
+  async unarchive(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+  ): Promise<SheetSnapshot> {
+    this.assertSheetActor(actor);
+    const dto = await this.validateMutation(
+      UnarchiveSaleSheetDto,
+      body,
+      "Dados inválidos. Confira a revisão e a data de arquivamento do pedido.",
+    );
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      if (sheet.revision !== dto.revision)
+        throw new ConflictException(
+          "O pedido foi atualizado. Recarregue antes de continuar.",
+        );
+      // A lost response can be replayed, but must never clear a later archive cycle.
+      if (!sheet.archivedAt) return this.toSnapshot(sheet);
+      if (sheet.archivedAt !== dto.archivedAt)
+        throw new ConflictException(
+          "O arquivamento do pedido mudou. Recarregue antes de desarquivar.",
+        );
+      // Metadata only: never reactivate links or normalize/render/retry frozen work.
+      delete sheet.archivedAt;
+      delete sheet.archivedBy;
+      return this.toSnapshot(sheet);
+    });
   }
 
   async rotateLink(
@@ -881,6 +1036,51 @@ export class SaleSheetService implements OnModuleInit {
       throw new ConflictException(
         "A ficha já foi enviada e não pode ter o link alterado.",
       );
+    if (sheet.archivedAt)
+      throw new ConflictException(
+        "Esta ficha está arquivada e não pode ser alterada.",
+      );
+  }
+
+  private assertEditable(sheet: StoredSheet): void {
+    if (sheet.submittedAt)
+      throw new ConflictException(
+        "Esta ficha já recebeu o cadastro e não pode ser editada.",
+      );
+    if (sheet.revoked)
+      throw new ConflictException(
+        "Esta ficha está cancelada e não pode ser alterada.",
+      );
+    if (sheet.archivedAt)
+      throw new ConflictException(
+        "Esta ficha está arquivada e não pode ser alterada.",
+      );
+  }
+
+  private assertRevision(sheet: StoredSheet, expected: number): void {
+    if (sheet.revision !== expected)
+      throw new ConflictException(
+        "A ficha foi atualizada. Recarregue antes de continuar.",
+      );
+  }
+
+  private assertSheetActor(actor: SheetActor): void {
+    if (!actor || !["ADMIN", "SALES"].includes(actor.role))
+      throw new ForbiddenException("Seu perfil não permite esta ação.");
+  }
+
+  private async validateMutation<T extends object>(
+    type: new () => T,
+    body: unknown,
+    message = "Dados inválidos. Confira a revisão e os dados informados.",
+  ): Promise<T> {
+    try {
+      return await validateInput(type, body);
+    } catch (error) {
+      if (error instanceof BadRequestException)
+        throw new BadRequestException(message);
+      throw error;
+    }
   }
 
   private assertAdmin(actor: SheetActor): void {
@@ -893,6 +1093,8 @@ export class SaleSheetService implements OnModuleInit {
       tokenHash: _token,
       creationKeyHash: _creationKey,
       creationBodyHash: _creationBody,
+      editOperations: _edits,
+      cancelOperation: _cancel,
       submissionKeyHash: _key,
       submissionBodyHash: _body,
       contractFile: _file,
