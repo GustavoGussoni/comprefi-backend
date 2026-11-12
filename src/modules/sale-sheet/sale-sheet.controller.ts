@@ -96,6 +96,28 @@ export class SaleSheetController {
     return this.sheets.cancel(request.user, id, body);
   }
 
+  @Post("admin/:id/finalize")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  finalize(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sheets.finalize(request.user, id, body);
+  }
+
+  @Post("admin/:id/reopen")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)
+  reopen(
+    @Req() request: AuthRequest,
+    @Param("id") id: string,
+    @Body() body: unknown,
+  ) {
+    return this.sheets.reopen(request.user, id, body);
+  }
+
   @Post("admin/:id/archive")
   @HttpCode(200)
   @UseGuards(JwtAuthGuard, CurrentSheetUserGuard)

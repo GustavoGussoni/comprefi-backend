@@ -218,6 +218,22 @@ export class UnarchiveSaleSheetDto extends SheetRevisionDto {
   archivedAt!: string;
 }
 
+export class FinalizeSaleSheetDto {
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  @Max(2147483647)
+  expectedVersion!: number;
+}
+
+export class ReopenSaleSheetDto extends FinalizeSaleSheetDto {
+  @IsDefined()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d\.\d{3}Z$/)
+  @IsISO8601({ strict: true, strictSeparator: true })
+  expectedFinalizedAt!: string;
+}
+
 export class EditSaleSheetDto extends SheetRevisionDto {
   @IsDefined()
   @ValidateNested()

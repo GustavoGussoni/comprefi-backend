@@ -102,18 +102,24 @@ export class PostgresSheetRepository implements SheetRepository {
               },
             });
           // Only operation name and versions, never token/key hashes, terms or PII.
+          const operational =
+            sheet.operationalHistory?.[sheet.operationalHistory.length - 1];
           const operation = !previous
             ? "created"
-            : (sheet.editOperations?.length || 0) >
-                (previous.editOperations?.length || 0)
-              ? `edit:expected=${previous.revision};result=${sheet.revision}`
-              : !previous.revoked && sheet.revoked
-                ? `cancel:expected=${previous.revision};result=${sheet.revision}`
-                : !previous.archivedAt && sheet.archivedAt
-                  ? `archive:revision=${sheet.revision}`
-                  : previous.archivedAt && !sheet.archivedAt
-                    ? `unarchive:revision=${sheet.revision}`
-                    : `state:pdf=${sheet.pdf.status};crm=${sheet.crm.status};revoked=${sheet.revoked}`;
+            : operational &&
+                (sheet.operationalHistory?.length || 0) >
+                  (previous.operationalHistory?.length || 0)
+              ? `${operational.action}:expected=${operational.expectedVersion};result=${operational.resultVersion}`
+              : (sheet.editOperations?.length || 0) >
+                  (previous.editOperations?.length || 0)
+                ? `edit:expected=${previous.revision};result=${sheet.revision}`
+                : !previous.revoked && sheet.revoked
+                  ? `cancel:expected=${previous.revision};result=${sheet.revision}`
+                  : !previous.archivedAt && sheet.archivedAt
+                    ? `archive:revision=${sheet.revision}`
+                    : previous.archivedAt && !sheet.archivedAt
+                      ? `unarchive:revision=${sheet.revision}`
+                      : `state:pdf=${sheet.pdf.status};crm=${sheet.crm.status};revoked=${sheet.revoked}`;
           await tx.saleSheetEvent.create({
             data: {
               id: randomUUID(),

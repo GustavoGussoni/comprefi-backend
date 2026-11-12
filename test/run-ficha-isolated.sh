@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
-WORKTREE=/home/ubuntu/comprefi-work/backend-ficha-usabilidade-20261110
-AUDIT=${FICHA_TEST_AUDIT_DIR:-/home/ubuntu/comprefi-audit/pedidos-desarquivar-20261111/backend}
+WORKTREE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+AUDIT=${FICHA_TEST_AUDIT_DIR:-/home/ubuntu/comprefi-audit/finalizados-20261112/backend}
 [[ "$AUDIT" =~ ^/home/ubuntu/comprefi-audit/[A-Za-z0-9_-]+/backend(/[A-Za-z0-9_-]+)*$ ]] || { echo 'invalid sanitized audit directory'; exit 1; }
 NODE_DIR=/home/ubuntu/.nvm/versions/node/v22.13.0/bin
 PG=/usr/lib/postgresql/17/bin
@@ -10,7 +10,7 @@ if [[ ! -x "$PG/postgres" ]]; then
 fi
 PG_CLIENT=/usr/lib/postgresql/17/bin
 if [[ ${1:-} != --inside ]]; then
-  cd /home/ubuntu/comprefi-ficha-preview
+  cd "$WORKTREE"
   exec sudo env -i PATH=/usr/bin:/bin HOME=/home/ubuntu NODE_ENV=test unshare -n /bin/sh -c "/usr/sbin/ip link set lo up && exec /usr/sbin/runuser -u ubuntu -- env -i PATH=$NODE_DIR:/usr/bin:/bin HOME=/home/ubuntu NODE_ENV=test FICHA_TEST_AUDIT_DIR=$AUDIT /bin/bash $WORKTREE/test/run-ficha-isolated.sh --inside"
 fi
 # No AppModule/main, existing DB, secret, envfile or external network is used.

@@ -45,6 +45,8 @@ import {
   assertIdempotencyKey,
   assertMoney,
   EditSaleSheetDto,
+  FinalizeSaleSheetDto,
+  ReopenSaleSheetDto,
   SheetCustomerDto,
   SheetRevisionDto,
   SheetTermsDto,
@@ -343,6 +345,108 @@ export class SaleSheetService implements OnModuleInit {
     });
   }
 
+  async finalize(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+  ): Promise<SheetSnapshot> {
+    this.assertSheetActor(actor);
+    const dto = await this.validateMutation(
+      FinalizeSaleSheetDto,
+      body,
+      "Dados inválidos. Confira a versão do pedido.",
+    );
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      if (!sheet.submittedAt || sheet.revoked || sheet.archivedAt)
+        throw new ConflictException(
+          "Só é possível finalizar pedidos respondidos, não cancelados e não arquivados.",
+        );
+      const currentVersion = this.adminVersion(sheet);
+      const last =
+        sheet.operationalHistory?.[sheet.operationalHistory.length - 1];
+      if (
+        sheet.finalizedAt &&
+        (dto.expectedVersion === currentVersion ||
+          (last?.action === "finalize" &&
+            last.expectedVersion === dto.expectedVersion &&
+            last.resultVersion === currentVersion &&
+            last.finalizedAt === sheet.finalizedAt))
+      )
+        return this.toSnapshot(sheet);
+      this.assertRevision(sheet, dto.expectedVersion);
+      const resultVersion = this.nextOperationalVersion(sheet);
+      // Unique monotonic timestamp also disambiguates cycles within one millisecond.
+      const at = new Date(
+        Math.max(Date.now(), last ? Date.parse(last.at) + 1 : 0),
+      ).toISOString();
+      sheet.finalizedAt = at;
+      sheet.finalizedById = actor.id;
+      sheet.finalizedByName = actor.name;
+      sheet.operationalVersion = resultVersion;
+      (sheet.operationalHistory ||= []).push({
+        action: "finalize",
+        at,
+        actorId: actor.id,
+        actorName: actor.name,
+        expectedVersion: dto.expectedVersion,
+        resultVersion,
+        finalizedAt: at,
+      });
+      return this.toSnapshot(sheet);
+    });
+  }
+
+  async reopen(
+    actor: SheetActor,
+    id: string,
+    body: unknown,
+  ): Promise<SheetSnapshot> {
+    this.assertSheetActor(actor);
+    const dto = await this.validateMutation(
+      ReopenSaleSheetDto,
+      body,
+      "Dados inválidos. Confira a versão e a data de finalização do pedido.",
+    );
+    return this.repository.transact((sheets) => {
+      const sheet = this.findOwnedIn(sheets, actor, id);
+      const last =
+        sheet.operationalHistory?.[sheet.operationalHistory.length - 1];
+      if (
+        !sheet.finalizedAt &&
+        last?.action === "reopen" &&
+        last.expectedVersion === dto.expectedVersion &&
+        last.resultVersion === this.adminVersion(sheet) &&
+        last.finalizedAt === dto.expectedFinalizedAt
+      )
+        return this.toSnapshot(sheet);
+      this.assertRevision(sheet, dto.expectedVersion);
+      if (!sheet.finalizedAt || sheet.finalizedAt !== dto.expectedFinalizedAt)
+        throw new ConflictException(
+          "A finalização do pedido mudou. Recarregue antes de reabrir.",
+        );
+      const resultVersion = this.nextOperationalVersion(sheet);
+      const at = new Date(
+        Math.max(Date.now(), last ? Date.parse(last.at) + 1 : 0),
+      ).toISOString();
+      delete sheet.finalizedAt;
+      delete sheet.finalizedById;
+      delete sheet.finalizedByName;
+      sheet.operationalVersion = resultVersion;
+      (sheet.operationalHistory ||= []).push({
+        action: "reopen",
+        at,
+        actorId: actor.id,
+        actorName: actor.name,
+        expectedVersion: dto.expectedVersion,
+        resultVersion,
+        finalizedAt: dto.expectedFinalizedAt,
+      });
+      // Metadata only: never unarchive, un-revoke, unsubmit, render or send CRM.
+      return this.toSnapshot(sheet);
+    });
+  }
+
   async archive(
     actor: SheetActor,
     id: string,
@@ -378,7 +482,7 @@ export class SaleSheetService implements OnModuleInit {
     );
     return this.repository.transact((sheets) => {
       const sheet = this.findOwnedIn(sheets, actor, id);
-      if (sheet.revision !== dto.revision)
+      if (this.adminVersion(sheet) !== dto.revision)
         throw new ConflictException(
           "O pedido foi atualizado. Recarregue antes de continuar.",
         );
@@ -1057,8 +1161,19 @@ export class SaleSheetService implements OnModuleInit {
       );
   }
 
+  private adminVersion(sheet: StoredSheet): number {
+    return Math.max(sheet.revision, sheet.operationalVersion || 0);
+  }
+
+  private nextOperationalVersion(sheet: StoredSheet): number {
+    const current = this.adminVersion(sheet);
+    if (current >= 2147483647)
+      throw new ConflictException("Limite de versões operacionais atingido.");
+    return current + 1;
+  }
+
   private assertRevision(sheet: StoredSheet, expected: number): void {
-    if (sheet.revision !== expected)
+    if (this.adminVersion(sheet) !== expected)
       throw new ConflictException(
         "A ficha foi atualizada. Recarregue antes de continuar.",
       );
@@ -1095,6 +1210,8 @@ export class SaleSheetService implements OnModuleInit {
       creationBodyHash: _creationBody,
       editOperations: _edits,
       cancelOperation: _cancel,
+      operationalVersion: _operationalVersion,
+      operationalHistory: _operationalHistory,
       submissionKeyHash: _key,
       submissionBodyHash: _body,
       contractFile: _file,
@@ -1112,6 +1229,14 @@ export class SaleSheetService implements OnModuleInit {
     }: SheetTask): SheetTask => rest;
     return clone({
       ...snapshot,
+      revision: this.adminVersion(sheet),
+      finalizedAt: snapshot.finalizedAt || null,
+      finalizedById: snapshot.finalizedAt
+        ? snapshot.finalizedById || null
+        : null,
+      finalizedByName: snapshot.finalizedAt
+        ? snapshot.finalizedByName || null
+        : null,
       pdf: task(snapshot.pdf),
       crm: task(snapshot.crm),
       crmAttachment: task(snapshot.crmAttachment),

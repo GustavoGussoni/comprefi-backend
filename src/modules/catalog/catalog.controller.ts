@@ -71,12 +71,12 @@ async getProductsByCategory(@Param("category") category: string) {
     isActive: group.isActive,
     storages: group.storages,
     pricing: this.buildPricingMap(group.variants),
-    activeVariants: group.variants.map((v) => ({
+    activeVariants: group.variants.filter((v) => this.hasPublicPrices(v)).map((v) => ({
       storage: v.storage,
       color: v.color,
       isActive: v.isActive,
     })),
-  }));
+  })).filter((group) => group.activeVariants.length > 0);
 }
 
 @Get("products/:category/:slug")
@@ -95,7 +95,7 @@ async getProductBySlug(
     },
   });
 
-  if (!group) {
+  if (!group || !group.variants.some((variant) => this.hasPublicPrices(variant))) {
     throw new HttpException("Produto não encontrado", HttpStatus.NOT_FOUND);
   }
 
@@ -130,7 +130,7 @@ async getProductsFlat() {
   // Transforma ProductGroup + Variants no formato flat que o DesiredModelStep espera
   const flatProducts: any[] = [];
   for (const group of groups) {
-    for (const variant of group.variants) {
+    for (const variant of group.variants.filter((v) => this.hasPublicPrices(v))) {
       flatProducts.push({
         id: variant.id,
         model: group.model,
@@ -442,7 +442,21 @@ async getCatalogStats() {
 // Helpers
 // ============================================
 
-
+private hasPublicPrices(variant: {
+  isActive?: boolean;
+  originalPrice: string;
+  installmentPrice: string;
+  pixPrice: string;
+}): boolean {
+  if (variant.isActive === false) return false;
+  return [variant.originalPrice, variant.installmentPrice, variant.pixPrice].every((price) => {
+    if (typeof price !== "string") return false;
+    const normalized = price.trim().replace(/^R\$\s*/, "").replace(/\s/g, "");
+    if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d{1,2})?$/.test(normalized)) return false;
+    const value = Number(normalized.replace(/\./g, "").replace(",", "."));
+    return Number.isFinite(value) && value > 0;
+  });
+}
 
 private buildPricingMap(
   variants: {
@@ -455,6 +469,7 @@ private buildPricingMap(
 ): Record<string, { originalPrice: string; installmentPrice: string; pixPrice: string }> {
   const map: Record<string, any> = {};
   for (const v of variants) {
+    if (!this.hasPublicPrices(v)) continue;
     const key = `${v.storage}-${v.color}`;
     map[key] = {
       originalPrice: v.originalPrice,
