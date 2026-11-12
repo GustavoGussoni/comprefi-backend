@@ -90,6 +90,10 @@ export type SheetSnapshot = SheetTerms & {
   /** Admin-route projection only, never included in PublicSheet or CRM JSON. */
   archivedAt?: string;
   archivedBy?: string;
+  /** Manual operational completion only; not payment/delivery/signature proof. */
+  finalizedAt?: string | null;
+  finalizedById?: string | null;
+  finalizedByName?: string | null;
   crm: SheetTask;
   pdf: SheetTask;
   crmAttachment: SheetTask;
@@ -99,6 +103,18 @@ export type StoredSheet = SheetSnapshot & {
   tokenHash: string;
   creationKeyHash?: string;
   creationBodyHash?: string;
+  /** Admin CAS version; contractual revision/document key remain untouched. */
+  operationalVersion?: number;
+  /** Private append-only audit; never projected to admin/public/CRM. */
+  operationalHistory?: Array<{
+    action: "finalize" | "reopen";
+    at: string;
+    actorId: string;
+    actorName: string;
+    expectedVersion: number;
+    resultVersion: number;
+    finalizedAt: string;
+  }>;
   /** Separate from creation; no raw key, token, terms or customer values. */
   editOperations?: Array<{
     actorId: string;
